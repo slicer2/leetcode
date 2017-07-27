@@ -1,0 +1,98 @@
+#include <iostream>
+#include <climits>
+
+using namespace std;
+
+class Solution {
+	const char * stripLeading0(const char *p) {
+		while (*p == ' ' || *p == '\t' || *p == '\n')
+			p++;
+
+		return p;
+	}
+
+	const char * stripSign(const char *p, char &sign) {
+		switch (*p) {
+			case '-':
+				sign = '-';
+				p++;
+				break;
+
+			case '+':
+				sign = '+';
+				p++;
+				break;
+
+			default:
+				sign = '+';
+		}
+
+		return p;
+	}
+
+	const char * stripNum(const char *p, int &num, char sign) {
+		int q;
+
+		while ( *p >= '0' && *p <= '9') {
+			q = (*p) - '0';
+
+			if (sign == '+') {
+
+				if (num > (INT_MAX-q)/10) {
+					num = INT_MAX;
+					return p;
+				}
+				else {
+					num *= 10;
+					num += (*p)-'0';
+					p++;
+				}
+			}
+			else {
+				if (num*10-q != INT_MIN && (-num > (INT_MAX-q)/10)) {
+					num = INT_MIN;
+					return p;
+				}
+				else {
+					num *= 10;
+					num -= (*p) - '0';
+					p++;
+				}
+			}
+		}
+
+		return p;
+	}
+
+	public:
+	int atoi(const char *str) {
+		const char *p = str;
+		int num = 0;
+		char sign;
+
+		p = stripLeading0(p);
+
+		p = stripSign(p, sign);
+
+		const char * q = stripNum(p, num, sign);
+
+		if (p == q)
+			return 0;
+
+		return num;
+	}
+};
+
+int main() {
+	cout << INT_MAX << '\t' << INT_MIN << endl;
+
+	char A[100];
+
+	cin >> A;
+
+	Solution sol;
+
+	cout << sol.atoi(A) << endl;
+
+	return 0;
+}

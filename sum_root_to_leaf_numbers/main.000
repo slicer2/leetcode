@@ -1,0 +1,131 @@
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <utility>
+#include <cstdlib>
+#include <string>
+#include <queue>
+#include <sstream>
+
+using namespace std;
+
+string indent("");
+
+template <typename T>
+ostream & operator << (ostream &os, const vector<T> &vec) {
+	for (typename vector<T>::const_iterator it = vec.begin(); it != vec.end(); it++)
+		os<< (*it) <<endl;
+
+	return os;
+}
+
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x = 0) : val(x), left(NULL), right(NULL) {}
+};
+
+TreeNode *constructBinaryTree(string &s) {
+	queue<TreeNode **> nodes;
+
+	stringstream ss(s);
+
+	TreeNode *root = NULL;
+
+	int val;
+
+	nodes.push(&root);
+
+	while ((ss>> val) && !nodes.empty()) {
+		TreeNode **p = nodes.front();
+		nodes.pop();
+
+		if (val) {
+			*p = new TreeNode(val);
+			nodes.push(&( (*p)->left ));
+			nodes.push(&( (*p)->right ));
+		}
+	}
+
+	return root;
+}
+
+TreeNode * constructTree(vector<int> &in, int start_in, int end_in, vector<int> &pre, int start_pre) {
+	
+	indent += string("  ");
+
+	if (end_in - start_in <= 0) {
+		indent = indent.substr(0, indent.size()-2);
+		return NULL;
+	}
+
+	// at least one node in the tree, get root
+	cerr<<indent<<"root = "<<pre[start_pre]<<endl;
+	TreeNode *root = new TreeNode(pre[start_pre]);
+
+
+	int pos = start_in;
+	while (in[pos] != pre[start_pre])
+		pos++;
+
+	// left child (could be empty)
+	cerr<<indent<<"construct left"<<endl;
+	root->left = constructTree(in, start_in, pos, pre, start_pre+1);
+
+	// right child (could be empty)
+	cerr<<indent<<"construct right"<<endl;
+	root->right = constructTree(in, pos+1, end_in, pre, start_pre+pos-start_in+1);
+
+	indent = indent.substr(0, indent.length()-2);
+
+	return root;
+}
+
+class Solution {
+	public:
+		int sumNumbers(TreeNode *root) {
+			stack<pair<TreeNode *, int> > nodes;
+
+			int sum = 0;
+
+			if (!root) return 0;
+
+			nodes.push(make_pair(root, root->val));
+
+			while (!nodes.empty()) {
+				pair<TreeNode *, int> p = nodes.top();
+				nodes.pop();
+				
+				if (!p.first->left && !p.first->right)
+					sum += p.second;
+				else {
+					if (p.first->left)
+						nodes.push(make_pair(p.first->left, p.second*10 + p.first->left->val));
+
+					if (p.first->right)	
+						nodes.push(make_pair(p.first->right, p.second*10 + p.first->right->val));
+				}
+			}
+
+			return sum;
+		}
+};
+
+int main() {
+	TreeNode *root;
+
+	string s;
+
+	getline(cin, s);
+
+	cout << "s " << s << endl;
+
+	root = constructBinaryTree(s);
+
+	Solution sol;
+
+	cout << sol.sumNumbers(root) << endl;
+
+	return 0;
+}

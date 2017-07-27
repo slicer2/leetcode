@@ -1,0 +1,292 @@
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+#include <utility>
+#include <cassert>
+#include <cstdlib>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	struct UnvisitedEntry {
+		string first;
+		int second;
+		vector<string> third;
+
+		UnvisitedEntry(string s1, int n, vector<string> v): first(s1), second(n), third(v) {}
+		UnvisitedEntry(string s1 = "", int n = 0): first(s1), second(n) {}
+	};
+
+	class Unvisited {
+
+		vector<pair<int, unordered_map<string, int>::iterator> > heap;
+		int heap_tail;
+
+		unordered_map<string, int> lut_idx;
+		unordered_map<string, vector<string> > lut_prev;
+
+		void swap(int i, int j) {
+			pair<int, unordered_map<string, int>::iterator> t = heap[i];
+			heap[i] = heap[j];
+			heap[j] = t;
+
+			heap[i].second->second = i;
+			heap[j].second->second = j;
+
+			//for (int i=0; i<heap_tail; i++) //cerr << heap[i].first << ' ';
+			////cerr << endl;
+		}
+
+		void sift_up(int i) {
+
+			while (i > 0) {
+				if (heap[i].first < heap[(i-1)/2].first) {
+					swap(i, (i-1)/2);
+					i = (i-1)/2;
+				}
+				else
+					break;
+			}
+		}
+
+		void sift_down(int i) {
+			while (2*i+1 < heap_tail) {
+				int left = 2*i+1, right = 2*i+2;
+				int smallest = i;
+
+				if (left < heap_tail)
+					if (heap[left].first < heap[smallest].first)
+						smallest = left;
+
+				if (right < heap_tail)
+					if (heap[right].first < heap[smallest].first)
+						smallest = right;
+
+				if (i != smallest) {
+					swap(i, smallest);
+					i = smallest;
+				}
+				else
+					break;
+			}
+		}
+
+		void remove() {
+			if (heap_tail == 1) {
+				heap_tail = 0;
+				lut_idx.clear();
+				lut_prev.clear();
+			}
+			else {
+				lut_prev.erase(heap[0].second->first);
+				lut_idx.erase(heap[0].second);
+				heap[0] = heap[--heap_tail];
+				sift_down(0);
+			}
+		}
+
+		public:
+		Unvisited(int h_size):heap(h_size+2), heap_tail(0) {}
+
+		void print() {
+			cerr << heap_tail << " words unvisited:" << endl;
+			
+			for (int i=0; i<heap_tail; i++)
+				cerr << heap[i].second->first << '\t' << i << '\t' << heap[i].first << lut_prev[heap[i].second->first] << endl;
+
+			cerr << endl;
+		}
+
+		void push(string word, int dist) {
+
+			unordered_map<string, int>::iterator f_it = lut_idx.find(word);
+
+			if (f_it != lut_idx.end())
+				return;
+
+			pair<unordered_map<string, int>::iterator, bool> ins_result = lut_idx.insert(make_pair(word, 0));
+
+			heap[heap_tail++] = make_pair(dist, ins_result.first);
+
+			ins_result.first->second = heap_tail-1;
+
+			vector<string> dummy;
+			lut_prev.insert(make_pair(word, dummy));
+		}
+
+		void heapify() {
+			for (int i=heap_tail-1; i>=0; i--)
+				sift_down(i);
+		}
+
+		UnvisitedEntry top() {
+			return UnvisitedEntry(heap[0].second->first, heap[0].first, lut_prev[heap[0].second->first]);;
+		}
+
+		UnvisitedEntry pop() {
+			UnvisitedEntry r(heap[0].second->first, heap[0].first, lut_prev[heap[0].second->first]);
+
+			remove();
+
+			return r;
+		}
+
+		bool empty() {
+			return heap_tail == 0;
+		}
+
+		void changeDist(string s, int d, string prev) {
+			int loc = lut_idx[s];
+
+			heap[loc].first = d;
+
+			sift_up(loc);
+
+			sift_down(loc);
+
+			lut_prev[s].push_back(prev);
+
+			//cerr << s << " has prev " << prev << endl;
+		}
+
+		int getDist(string s) {
+			unordered_map<string, int>::iterator it = lut_idx.find(s);
+
+			if (it == lut_idx.end())
+				return -1;
+			else
+				return heap[it->second].first;
+		}
+
+	};
+
+	void constructSentences(string s, string term, unordered_map<string, vector<string> > &visited, vector<string> &rsentence, vector<vector<string> > &sentences){
+		rsentence.push_back(s);
+
+		for (vector<string>::iterator it = visited[s].begin();
+			it != visited[s].end(); it++) {
+			
+			if ((*it) != term)
+				constructSentences(*it, term, visited, rsentence, sentences);
+			else {
+				rsentence.push_back(term);
+
+				vector<string > sentence(rsentence.size());
+
+				copy(rsentence.rbegin(), rsentence.rend(), sentence.begin());
+
+				sentences.push_back(sentence);
+
+				rsentence.pop_back();
+			}
+		}
+
+		rsentence.pop_back();
+	}
+
+	public:
+		vector<vector<string> > findLadder(string start, string end, unordered_set<string> &dict) {
+
+			int ladder_lim = dict.size() + 1;
+
+			Unvisited unvisited(dict.size());
+
+			unordered_map<string, vector<string> > visited;
+
+			for (auto &x: dict) {
+				if (x != start)
+					unvisited.push(x, ladder_lim);
+				else
+					unvisited.push(x, 0);
+			}
+
+			unvisited.push(start, 0);
+			unvisited.push(end, ladder_lim);
+
+			//unvisited.print();
+
+			unvisited.heapify();
+
+			//unvisited.print();
+
+
+
+			// dijkstra
+			UnvisitedEntry currNode;
+
+			while (!unvisited.empty() && (unvisited.top()).second != ladder_lim) {
+				currNode = unvisited.pop();
+				visited.insert(make_pair(currNode.first, currNode.third));
+
+				//cerr << "currNode: (" << currNode.first << ", " << currNode.second << ")" << endl;
+
+				if (currNode.first == end)
+					break;
+
+
+				for (unsigned int i=0; i<start.length(); i++) {
+
+					string possible_neighbor  = currNode.first;
+
+					char original_ch = possible_neighbor[i];
+
+					for (char ch = 'a'; ch <= 'z'; ch++) {
+						if (ch == original_ch)
+							continue;
+
+						possible_neighbor[i] = ch;
+
+						int distToUnvisited;
+
+						if ( (distToUnvisited = unvisited.getDist(possible_neighbor)) >= 0 ) {
+							if (distToUnvisited >= currNode.second + 1) {
+								unvisited.changeDist(possible_neighbor, currNode.second+1, currNode.first);
+								//cerr << "updating dist to " << possible_neighbor << '\t' << currNode.second + 1 << endl;
+							}
+						}
+					}
+				}
+
+			}
+
+			//cout << " in visited: " << endl;
+			//for (auto &x: visited) {
+			//	cout << x.first << " " << x.second << endl;
+			//}
+
+			vector<vector<string> > sentences;
+			vector<string> rsentence;
+
+			if (currNode.first == end) {
+				//cerr << "ready to construct all paths" << endl;
+				constructSentences(end, start, visited, rsentence, sentences);
+			}
+			
+			return sentences;
+		}
+};
+
+int main() {
+	unordered_set<string> dict;
+	string s;
+
+	string start, end;
+
+	cin >> start >>  end;
+
+	while (cin >> s)
+		dict.insert(s);
+
+	//cerr << start << "  " << end << "  " << dict.size() << endl;
+
+	Solution sol;
+
+	vector<vector<string> > sentences = sol.findLadder(start, end, dict);
+
+	cout << sentences;
+
+	return 0;
+}

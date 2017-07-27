@@ -1,0 +1,56 @@
+#include <string>
+#include <iostream>
+#include <stack>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	public:
+		int longestValidParentheses(string s) {
+			stack<unsigned> left;
+			stack<pair<unsigned, unsigned> > match;
+
+			for (unsigned i=0; i<s.length(); i++) {
+				if (s[i] == ')') {
+					if (!left.empty()) {
+						unsigned leftPos = left.top();
+						left.pop();
+
+						while (!match.empty() && (leftPos < match.top().first || match.top().second + 1 == leftPos)) {
+							pair<unsigned, unsigned> p = match.top();
+							match.pop();
+
+							if (p.second+1 == leftPos)
+								leftPos = p.first;
+						}
+
+						match.push(make_pair(leftPos, i));
+					}
+				}
+				else
+					left.push(i);
+			}
+
+			unsigned maxLen = 0;
+			while (!match.empty()) {
+				pair<unsigned, unsigned> p = match.top();
+				if (p.second - p.first + 1 > maxLen)
+					maxLen = p.second - p.first + 1;
+
+				match.pop();
+			}
+
+			return maxLen;
+		}
+};
+
+int main() {
+	string s;
+	cin >> s;
+
+	Solution sol;
+	cout << sol.longestValidParentheses(s) << endl;
+
+	return 0;
+}

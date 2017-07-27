@@ -1,0 +1,161 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <utility>
+#include "dan.h"
+#include <cstdlib>
+#include <sstream>
+
+using namespace std;
+
+string ind("");
+
+class Solution {
+	vector<vector<char> > route;
+	int rows, cols;
+
+	bool isValid(vector<vector<char> > &board, string &word, vector<pair<int, int> > &partial) {
+		pair<int, int> last = partial.back();
+
+		if (board[last.first][last.second] == word[partial.size()-1])
+			return true;
+
+		return false;
+	}
+
+	bool bt(vector<vector<char> > &board, string &word, vector<pair<int, int> > &partial){
+		//ind += "  ";
+		//cerr << ind << "partial = " << partial << endl;
+
+		if (!isValid(board, word, partial)) {
+			//ind = ind.substr(0, ind.length()-2);
+			return false;
+		}
+
+		if (partial.size() == word.length()) {
+			//ind = ind.substr(0, ind.length()-2);
+			return true;
+		}
+
+		pair<int, int> last = partial.back();
+
+		//cerr << ind << '(' << last.first << ", " << last.second << ")\t" << board[last.first][last.second] << endl;
+
+		if (last.first > 0 && route[last.first-1][last.second] == 0) {
+			partial.push_back(make_pair(last.first-1, last.second));
+			route[last.first-1][last.second] = 1;
+			if (bt(board, word, partial)) {
+				//ind = ind.substr(0, ind.length()-2);
+				return true;
+			}
+			route[last.first-1][last.second] = 0;
+			partial.pop_back();
+		}
+
+
+		if (last.first < rows-1 && route[last.first+1][last.second] == 0) {
+			partial.push_back(make_pair(last.first+1, last.second));
+			route[last.first+1][last.second] = 1;
+			if (bt(board, word, partial)) {
+				//ind = ind.substr(0, ind.length()-2);
+				return true;
+			}
+			route[last.first+1][last.second] = 0;
+			partial.pop_back();
+		}
+
+		if (last.second > 0 && route[last.first][last.second-1] == 0) {
+			partial.push_back(make_pair(last.first, last.second-1));
+			route[last.first][last.second-1] = 1;
+			if (bt(board, word, partial)) {
+				//ind = ind.substr(0, ind.length()-2);
+				return true;
+			}
+			route[last.first][last.second-1] = 0;
+			partial.pop_back();
+		}
+
+		if (last.second < cols-1 && route[last.first][last.second+1] == 0) {
+			partial.push_back(make_pair(last.first, last.second+1));
+			route[last.first][last.second+1] = 1;
+			if (bt(board, word, partial)) {
+				//ind = ind.substr(0, ind.length()-2);
+				return true;
+			}
+			route[last.first][last.second+1] = 0;
+			partial.pop_back();
+		}
+
+		//ind = ind.substr(0, ind.length()-2);
+		return false;
+
+	}
+
+	public:
+		bool exist(vector<vector<char> > &board, string word) {
+			if (board.size() == 0 || board[0].size() == 0) {
+				if (word.size() == 0)
+					return true;
+				else
+					return false;
+			}
+
+			rows = board.size();
+			cols = board[0].size();
+
+			vector<pair<int, int> > partial;
+
+			route = board;
+
+			for (auto &x: route)
+				for (auto &y: x)
+					y = 0;
+
+			for (int i=0; i<rows; i++)
+				for (int j=0; j<cols; j++) {
+					if (board[i][j] == word[0]) {
+						partial.push_back(make_pair(i, j));
+						route[i][j] = 1;
+						if (bt(board, word, partial))
+							return true;
+						else {
+							partial.pop_back();
+							route[i][j] = 0;
+						}
+					}
+				}
+
+			return false;
+		}
+};
+
+int main() {
+	vector<vector<char> > board;
+	string word;
+	string s;
+	char ch;
+	vector<char> row;
+
+	cin >> word;
+
+	getline(cin, s);
+
+	while (getline(cin, s)) {
+		stringstream ss(s);
+		row.clear();
+
+		while (ss >> ch)
+			row.push_back(ch);
+
+		board.push_back(row);
+	}
+
+	//cout << "word = " << word << endl;
+	//cout << "board = " << board << endl;
+
+	Solution sol;
+
+	cout << ((sol.exist(board, word))?"yes":"no") << endl;
+
+	return 0;
+}

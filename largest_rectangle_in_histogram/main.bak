@@ -1,0 +1,74 @@
+#include <iostream>
+#include <stack>
+#include <vector>
+#include <utility>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	public:
+		int largestRectangleArea(vector<int> &height) {
+			if (height.size() == 0)
+				return 0;
+
+			int max_area = height[0];
+			int area;
+
+			stack<pair<int, int> > sta;
+			sta.push(make_pair(height[0], 0));
+			
+			for (int i=1; i<(int)height.size(); i++) {
+				pair<int, int> popped = make_pair(height[i], i);
+
+
+				while (!sta.empty() && height[i] <= sta.top().first) {
+					popped = sta.top();
+					sta.pop();
+				}
+
+				area = (i-popped.second+1) * height[i];
+
+				if (area > max_area)
+					max_area = area;
+
+				stack<pair<int, int> >sta1;
+
+				while (!sta.empty()) {
+					pair<int, int> p = sta.top();
+					sta.pop();
+
+					area = (i-p.second+1) * p.first;
+
+					if (area > max_area)
+						max_area = area;
+
+					sta1.push(p);
+				}
+
+				while (!sta1.empty()) {
+					pair<int, int> p = sta1.top();
+					sta1.pop();
+					sta.push(p);
+				}
+
+				sta.push(make_pair(height[i], popped.second));
+			}
+
+			return max_area;
+		}
+};
+
+int main() {
+	vector<int> height;
+	int h;
+
+	while (cin >> h) 
+		height.push_back(h);
+
+	Solution sol;
+
+	cout << sol.largestRectangleArea(height) << endl;
+
+	return 0;
+}

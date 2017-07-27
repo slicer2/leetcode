@@ -1,0 +1,106 @@
+#include <iostream>
+#include <string>
+#include <queue>
+#include <unordered_map>
+#include <functional>
+#include <cstdlib>
+
+using namespace std;
+
+class Solution {
+	public:
+		typedef unordered_map<char, pair<priority_queue<int, vector<int>, greater<int> >, int> > Want;
+
+		string minWindow(string S, string T) {
+			int start;
+			int total = 0;
+			int target = 0;
+			Want want;
+
+			if (T.empty())
+				return string("");
+
+
+			for (int i=0; i<(int)T.length(); i++) {
+				priority_queue<int, vector<int>, greater<int> > temp;
+				if (want.find(T[i]) == want.end()) {
+					want.insert(make_pair(T[i], make_pair(temp, 1)));
+				}
+				else
+					want[T[i]].second++;
+
+				target++;
+			}
+
+
+			int j = -1, minWin = S.length()+1;
+
+			for (int i=0; i<(int)S.length(); i++) {
+
+				if (want.find(S[i]) != want.end()) {
+					// we found one new character
+					if (want[S[i]].first.empty() && j == -1)
+						j = i;
+
+					if ((int)want[S[i]].first.size() < want[S[i]].second)
+						total++;
+
+					want[S[i]].first.push(i);
+
+				}
+
+				if (total == target) {
+					if (i-j+1 < minWin) {
+						start = j;
+						minWin = i-j+1;
+					}
+
+					want[S[j]].first.pop();
+					if ((int)want[S[j]].first.size() < want[S[j]].second)
+						total--;
+
+					j++;
+					
+				}
+
+				while (j<=i && ( want.find(S[j]) == want.end() || (int)want[S[j]].first.size() > want[S[j]].second) ) {
+					if (want.find(S[j]) != want.end() && (int)want[S[j]].first.size() > want[S[j]].second)
+						want[S[j]].first.pop();
+					j++;
+				}
+
+				cerr << S[i] << "  j = " << j << "  i = " << i << "  total = " << total << "  start = " << start << "  minWin = " << minWin << endl;
+			}
+
+
+			if (minWin == (int)S.length()+1)
+				return string("");
+			else
+				return S.substr(start, minWin);
+		}
+};
+
+
+int main() {
+	string s;
+	string t;
+
+	cin >> s;
+	cin >> t;
+
+	cerr << "S = " << s << endl;
+	cerr << "T = " << t << endl;
+
+
+	//priority_queue<int, vector<int>, greater<int> > test;
+
+	//test.push(3);
+	//test.push(1);
+	//test.push(4);
+
+	//cout << test.top() << endl;
+
+	Solution sol;
+		cout << sol.minWindow(s, t) << endl;
+	return 0;
+}

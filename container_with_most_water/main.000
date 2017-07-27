@@ -1,0 +1,71 @@
+#include <iostream>
+#include <vector>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+		int maxarea(vector<int> &height, int start, int end) {
+			if (start+1 == end)
+				return 0;
+
+			int maxLeft = maxarea(height, start, (start+end)/2);
+			int maxRight = maxarea(height, (start+end)/2, end);
+			int maxA;
+
+			if (maxLeft > maxRight)
+				maxA = maxLeft;
+			else
+				maxA = maxRight;
+
+			vector<pair<int, int>> leftRamp, rightRamp;
+
+			leftRamp.push_back(make_pair(height[start], start));
+			rightRamp.push_back(make_pair(height[end-1], end-1));
+
+			for (int i=start; i<(start+end)/2; i++)
+				if (height[i] > leftRamp.back().first)
+					leftRamp.push_back(make_pair(height[i], i));
+
+			for (int i=end-1; i>=(start+end)/2; i--)
+				if (height[i] > rightRamp.back().first)
+					rightRamp.push_back(make_pair(height[i], i));
+
+			auto l_it = leftRamp.begin();
+			auto r_it = rightRamp.begin();
+
+			while (l_it != leftRamp.end()  && r_it !=rightRamp.end()) {
+				if (l_it->first < r_it->first) {
+					if (l_it->first*(r_it->second-l_it->second) > maxA)
+						maxA = l_it->first*(r_it->second-l_it->second);
+
+					l_it++;
+				}
+				else {
+					if (r_it->first*(r_it->second-l_it->second) > maxA)
+						maxA = r_it->first*(r_it->second-l_it->second);
+
+					r_it++;
+				}
+			}
+
+			return maxA;
+		}
+	public:
+
+		int maxArea(vector<int> &height) {
+			return maxarea(height, 0, height.size());
+		}
+
+};
+
+int main() {
+	vector<int> height;
+	cin >> height;
+
+	Solution sol;
+
+	cout << sol.maxArea(height) << endl;
+
+	return 0;
+}

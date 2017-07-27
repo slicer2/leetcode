@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+
+	vector<vector<int> > perm(vector<pair<int, int> > numCnt, int start) {
+		if (start+1 == (int)numCnt.size())
+			return vector<vector<int> > (1, vector<int>(numCnt[start].second, numCnt[start].first));
+
+		vector<vector<int> > result;
+
+		for (int i=start; i<(int)numCnt.size(); i++) {
+			pair<int, int> t = numCnt[start];
+			numCnt[start] = numCnt[i];
+			numCnt[i] = t;
+
+			vector<vector<int> > temp;
+
+			if (numCnt[start].second > 1) {
+				numCnt[start].second--;
+				temp = perm(numCnt, start);
+
+				numCnt[start].second++;
+			}
+			else
+				temp = perm(numCnt, start+1);
+
+			for (auto &x: temp) {
+				x.push_back(numCnt[start].first);
+				result.push_back(x);
+			}
+
+			t = numCnt[start];
+			numCnt[start] = numCnt[i];
+			numCnt[i] = t;
+		}
+
+		return result;
+	}
+
+	public:
+
+	vector<vector<int> > permuteUnique(vector<int> &num) {
+		if (num.size() == 0)
+			return vector<vector<int> >(0);
+
+		unordered_map<int, int> cnt;
+		for (auto &x: num)
+			cnt[x]++;
+
+		vector<pair<int, int> > numCnt(cnt.begin(), cnt.end());
+
+		return perm(numCnt, 0);
+	}
+
+};
+
+int main() {
+	vector<int> num;
+
+	cin >> num;
+
+	Solution sol;
+
+	cout << sol.permuteUnique(num) << endl;
+
+	return 0;
+}

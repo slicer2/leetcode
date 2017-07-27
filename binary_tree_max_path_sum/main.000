@@ -1,0 +1,143 @@
+#include <iostream>
+#include <sstream>
+#include <queue>
+#include <algorithm>
+#include <cstdlib>
+#include <string>
+#include <unordered_map>
+
+using namespace std;
+
+string indent("");
+
+struct TreeNode {
+    int val;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int x = 0) : val(x), left(NULL), right(NULL) {}
+};
+
+class Solution {
+	unordered_map<TreeNode *, int> sow;
+
+	int maxRootPathSum(TreeNode *root) {
+		unordered_map<TreeNode *, int>::iterator it = sow.find(root);
+
+		if (it != sow.end())
+			return (it->second);
+
+		//indent += "  ";
+		//cerr << indent << "maxRootPathSum: " << ((root)?root->val:0)<< endl;
+
+		if (!root) {
+			//indent = indent.substr(0, indent.length()-2);
+			return 0;
+		}
+
+		vector<int> toCompare;
+
+		toCompare.push_back(root->val);
+
+		if (root->left)
+			toCompare.push_back(root->val + maxRootPathSum(root->left));
+		
+		if (root->right)
+			toCompare.push_back(root->val + maxRootPathSum(root->right));
+
+		//indent = indent.substr(0, indent.length()-2);
+
+		vector<int>::iterator m_it = max_element(toCompare.begin(), toCompare.end());
+		sow.insert(make_pair(root, *m_it));
+
+		return (*m_it);
+	}
+
+	public:
+		int maxPathSum(TreeNode *root) {
+			unordered_map<TreeNode *, int>::iterator it;
+
+			//indent += "  ";
+			//cerr << indent << "maxPathSum: " << ((root)?root->val:0) << endl;
+
+			if (!root) {
+				//indent = indent.substr(0, indent.length()-2);
+				return 0;
+			}
+
+			vector<int> toCompare;
+			toCompare.push_back(root->val);
+
+			int leftRootMaxPathSum, rightRootMaxPathSum;
+
+			if (root->left) {
+				toCompare.push_back( maxPathSum(root->left) );
+				
+				it = sow.find(root->left);
+				if (it != sow.end())
+					leftRootMaxPathSum = it->second;
+				else
+					leftRootMaxPathSum = maxRootPathSum(root->left);
+				toCompare.push_back( root->val + leftRootMaxPathSum);
+			}
+
+			if (root->right) {
+				toCompare.push_back( maxPathSum(root->right) );
+
+				it = sow.find(root->right);
+				if (it != sow.end())
+					rightRootMaxPathSum = it->second;
+				else
+					rightRootMaxPathSum = maxRootPathSum(root->right);
+				toCompare.push_back( root->val + rightRootMaxPathSum );
+			}
+
+			if (root->left && root->right)
+				toCompare.push_back(leftRootMaxPathSum + root->val + rightRootMaxPathSum);
+
+			//indent = indent.substr(0, indent.length()-2);
+			return (*max_element(toCompare.begin(), toCompare.end()));
+		}
+};
+
+TreeNode *constructBinaryTree(string &s) {
+	queue<TreeNode **> nodes;
+
+	stringstream ss(s);
+
+	TreeNode *root = NULL;
+
+	int val;
+
+	nodes.push(&root);
+
+	while ((ss>> val) && !nodes.empty()) {
+		TreeNode **p = nodes.front();
+		nodes.pop();
+
+		if (val>-1000) {
+			*p = new TreeNode(val);
+			nodes.push(&( (*p)->left ));
+			nodes.push(&( (*p)->right ));
+		}
+	}
+
+	return root;
+}
+
+int main() {
+	TreeNode *root;
+
+	string s;
+
+	getline(cin, s);
+
+	cout << "s " << s << endl;
+
+	root = constructBinaryTree(s);
+
+	Solution sol;
+
+	cout << sol.maxPathSum(root) << endl;
+
+	return 0;
+}

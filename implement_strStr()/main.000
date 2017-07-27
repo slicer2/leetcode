@@ -1,0 +1,65 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+
+	vector<int> kmp(const char *needle, int &n) {
+		if (needle[0] == '\0') {
+			n = 0;
+			return vector<int>({});
+		}
+
+		vector<int> pi(1, 0);
+		int q = 0;
+
+		for (n=1; needle[n] != '\0'; n++) {
+			while (q > 0 && needle[n] != needle[q])
+				q = pi[q-1];
+
+			if (needle[n] == needle[q])
+				q++;
+
+			pi.push_back(q);
+		}
+
+		return pi;
+	}
+
+	public:
+		int strStr(char *haystack, char *needle) {
+			if (needle[0] == '\0')
+				return 0;
+
+			int n;
+			vector<int> pi = kmp(needle, n);
+
+
+			int q = 0;
+
+			for (int p=0; haystack[p] != '\0'; p++) {
+				while (q > 0 && haystack[p] != needle[q])
+					q = pi[q-1];
+
+				if (haystack[p] == needle[q])
+					q++;
+
+				if (q == n)
+					return p-n+1;
+			}
+
+			return -1;
+		}
+};
+
+int main() {
+	char haystack[100], needle[100];
+	
+	cin >> haystack >> needle;
+
+	Solution sol;
+	cout << sol.strStr(haystack, needle) << endl;
+
+	return 0;
+}

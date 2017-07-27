@@ -1,0 +1,76 @@
+#include <iostream>
+
+using namespace std;
+
+class MinStack {
+	struct ListNode {
+		pair<int, int> val;
+		ListNode *next;
+		ListNode (int num, int min): val({num, min}) {}
+	};
+
+	ListNode *head;
+
+	int min(int x, int y) {
+		return (x<y)?x:y;
+	}
+
+	public:
+		MinStack(): head(NULL) {}
+		~MinStack(){
+			while (head) {
+				ListNode *t = head->next;
+				delete head;
+				head = t;
+			}
+		}
+
+		void push(int x) {
+			ListNode *p;
+
+			if (head) {
+				p = new ListNode(x, min(x, head->val.second));
+			}
+			else {
+				p = new ListNode(x, x);
+			}
+
+			p->next = head;
+			head = p;
+		}
+
+		void pop() {
+			ListNode *t = head->next;
+			delete head;
+			head = t;
+		}
+
+		int top() {
+			return head->val.first;
+		}
+
+		int getMin() {
+			return head->val.second;
+		}
+};
+
+int main() {
+	int num;
+	int n = 0;
+	MinStack msta;
+
+	while (cin >> num) {
+		msta.push(num);
+		cerr << "push " << '\t' << num << '\t' << "min " << msta.getMin() << endl;
+		n++;
+	}
+
+	cerr << "start popping:" << endl;
+	while (n>0) {
+		cerr << "min " << msta.top() << '\t' << "min " << msta.getMin() << endl;
+		msta.pop();
+		n--;
+	}
+
+	return 0;
+}

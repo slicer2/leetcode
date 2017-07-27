@@ -1,0 +1,122 @@
+#include <vector>
+#include "dan.h"
+#include <iostream>
+#include <unordered_set>
+#include <stack>
+#include <list>
+#include <cstdlib>
+
+using namespace std;
+
+class Solution {
+	public:
+		const static int delim;
+
+		vector<vector<int> > buildGraph(int n, vector<pair<int, int> > pre) {
+			vector<vector<int> > G = vector<vector<int> >(n, vector<int>(0));
+
+			for (auto &y: pre)
+				G[y.first].push_back(y.second);
+
+			cerr << "G = " << endl;
+			cerr << G << endl;
+			return G;
+		}
+
+		bool hasCycle(int start_node, vector<vector<int> > &G, vector<bool> &visited) {
+			stack<int> sta;
+			int n = visited.size();
+			list<int> curr_path;
+
+			vector<bool> onpath = vector<bool> (false, n);
+
+
+			//cerr << "+ delim" << endl;
+			//sta.push(delim);
+			sta.push(start_node);
+			visited[start_node] = true;
+
+			while (!sta.empty()) {
+				int curr_node = sta.top();
+				sta.pop();
+				cerr << "curr_node = " << curr_node << endl;
+
+				if (curr_node == delim) {
+					onpath[curr_path.back()] = false;
+					curr_path.pop_back();
+					cerr << "curr_path = " << curr_path << endl;
+				}
+				else {
+					onpath[curr_node] = true;
+					curr_path.push_back(curr_node);
+					cerr << "curr_path = " << curr_path << endl;
+
+					cerr << "+ delim" << endl;
+					sta.push(delim);
+					for (auto &y: G[curr_node]) {
+						if (onpath[y]) {
+							cerr << y << " is on path, cycle!" << endl;
+							return true;
+						}
+
+						if (!visited[y]) {
+							visited[y] = true;
+							sta.push(y);
+						}
+					}
+					
+					//if (sta.top() == delim) {
+					//	cerr << "- delim" << endl;
+					//	sta.pop();
+
+					//	cerr << "removing " << curr_path.back() << " from curr_path" << endl;
+					//	onpath[curr_path.back()] = false;
+					//	curr_path.pop_back();
+					//}
+				}
+			}
+
+			cerr << "return" << endl;
+
+			return false;
+		}
+
+		bool canFinish(int numCourses, vector<pair<int, int> >& prerequisites) {
+			vector<vector<int> > G = buildGraph(numCourses, prerequisites);
+			vector<bool> visited = vector<bool>(false, numCourses);
+
+			for (int i = 0; i < numCourses; i++) {
+				if (visited[i])
+					continue;
+
+				if (hasCycle(i, G, visited))
+					return false;
+			}
+
+			return true;
+		}
+};
+
+const int Solution::delim = -1;
+
+int main() {
+	int numCourses;
+	vector<pair<int, int> > prerequisites;
+	int temp1, temp2;
+
+	cin >> numCourses;
+	cin.ignore(100, '\n');
+
+	while (cin >> temp1 >> temp2) {
+		prerequisites.push_back(make_pair(temp1, temp2));
+	}
+
+
+	Solution sol;
+	if (sol.canFinish(numCourses, prerequisites))
+		cout << "yes" << endl;
+	else
+		cout << "no" << endl;
+
+	return 0;
+}

@@ -1,0 +1,86 @@
+#include <iostream>
+#include <vector>
+#include <utility>
+#include "dan.h"
+
+using namespace std;
+
+class MinStack {
+	vector<pair<int, int> > msta;
+	vector<int> sta;
+	int minX;
+
+	int min(int x, int y) {
+		return (x<y)?x:y;
+	}
+
+	public:
+
+	void push(int x) {
+		if (sta.empty()) {
+			msta.push_back(make_pair(x, 1));
+			minX = x;
+		}
+		else {
+			if (x > sta.back()) {
+				if (sta.back() < minX) {
+					minX = sta.back();
+					msta.push_back(make_pair(minX, 1));
+				}
+			}
+			else {
+				if (x == minX)
+					msta.back().second++;
+			}
+		}
+
+		sta.push_back(x);
+		//cerr << msta << endl;
+	}
+
+	void pop() {
+		int num = sta.back();
+
+		if (num == minX) {
+			if (msta.back().second > 1)
+				msta.back().second--;
+			else {
+				msta.pop_back();
+				minX = msta.back().first;
+			}
+		}
+
+		sta.pop_back();
+
+		//cerr << msta<< endl;
+	}
+
+	int top() {
+		return sta.back();
+	}
+
+	int getMin() {
+		return min(minX, sta.back());
+	}
+};
+
+int main() {
+	int num;
+	int n = 0;
+	MinStack minStack;
+
+	while (cin >> num) {
+		minStack.push(num);
+		cerr << "push " << '\t' << num << '\t' << "min " << minStack.getMin() << endl;
+		n++;
+	}
+
+	cerr << "start popping:" << endl;
+	while (n>0) {
+		cerr << "pop " << minStack.top() << '\t' << "min " << minStack.getMin() << endl;
+		minStack.pop();
+		n--;
+	}
+
+	return 0;
+}

@@ -1,0 +1,185 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include "dan.h"
+#include <unordered_set>
+#include <unordered_map>
+#include <cstdlib>
+
+using namespace std;
+
+class Solution {
+	struct DictNode {
+		unordered_map<char, DictNode *> next;
+		~DictNode() {
+			for (auto &x: next)
+				delete x.second;
+		}
+	};
+
+	DictNode *dict;
+
+	int substr_len;
+
+	unordered_map<string, int> rep;
+
+	int target;
+
+	struct Partial {
+		unordered_map<string, int> seen;
+		DictNode *currNodePtr;
+		string currSubstr;
+		int totalSeen;
+
+		Partial () : currNodePtr(NULL), currSubstr(""), totalSeen(0) {}
+		~Partial() {
+		}
+	};
+
+	Partial *partial;
+
+	void prep(vector<string> &L) {
+		substr_len = L[0].length();
+
+		partial = new Partial[substr_len];
+
+		target = L.size();
+
+		for (auto &x: L) {
+		
+			if (!dict) dict = new DictNode;
+
+			DictNode *p = dict;
+
+			if (rep.find(x) == rep.end())
+				rep.insert(make_pair(x, 1));
+			else{
+				rep[x]++;
+			}
+
+
+			for (int i=0; i<substr_len-1; i++) {
+				if (p->next.find(x[i]) == p->next.end()) {
+					p->next.insert( make_pair(x[i], new DictNode) );
+				}
+
+				p = p->next[x[i]];
+			}
+
+			p->next.insert( make_pair(x[substr_len-1], (DictNode *)NULL) );
+		}
+
+		for (int i=0; i<substr_len; i++) {
+			partial[i].currNodePtr = dict;
+
+			for (auto &x: rep) {
+				partial[i].seen.insert(make_pair(x.first, 0));
+			}
+		}
+	}
+
+	void printDict( DictNode *p, int n ) {
+		if (p) {
+			for (auto &x: p->next) {
+				cerr << string(n, ' ') << x.first << endl;
+				printDict( x.second, n+2);
+			}
+		}
+	}
+
+	public:
+	Solution(): dict(NULL), target(0) {}
+	~Solution() {
+		if (partial)
+			delete [] partial;
+
+		if (dict) {
+			delete dict;
+		}
+	}
+
+	vector<int> findSubstring(string S, vector<string> &L) {
+		prep(L);
+
+		//cerr << S << endl;
+		//printDict(dict, 0);
+
+		vector<int> result;
+
+		for (int i=0; i<(int)S.length(); i++) {
+			//cerr << "i = :" << i << endl;
+
+			for (int j=0; j<substr_len; j++) {
+				if (partial[j].currSubstr.length() == 0 && (i % substr_len != j))
+					continue;
+
+				if (partial[j].currNodePtr->next.find(S[i]) != partial[j].currNodePtr->next.end()) {
+					partial[j].currSubstr += S[i];
+
+					if ((int)partial[j].currSubstr.length() == substr_len) {
+						if (partial[j].seen[partial[j].currSubstr] < rep[partial[j].currSubstr]) {
+							partial[j].seen[partial[j].currSubstr]++;
+							partial[j].currSubstr = "";
+							partial[j].totalSeen++;
+
+							if (partial[j].totalSeen == target) {
+								result.push_back(i - target*substr_len + 1);
+								partial[j].seen[S.substr(i - partial[j].totalSeen*substr_len + 1, substr_len)]--;
+								partial[j].totalSeen--;
+							}
+
+							partial[j].currNodePtr = dict;
+						}
+						else {
+							do {
+								partial[j].seen[S.substr(i-(partial[j].totalSeen+1)*substr_len+1, substr_len)]--;
+								partial[j].totalSeen--;
+							} while (partial[j].seen[partial[j].currSubstr] == rep[partial[j].currSubstr]);
+
+
+							partial[j].seen[partial[j].currSubstr]++;
+							partial[j].totalSeen++;
+							partial[j].currSubstr = "";
+							partial[j].currNodePtr = dict;
+						}
+					}
+					else
+						partial[j].currNodePtr = partial[j].currNodePtr->next[S[i]];
+				}
+				else {
+					for (auto &x: partial[j].seen) x.second = 0;
+					partial[j].currSubstr = "";
+					partial[j].currNodePtr = dict;
+					partial[j].totalSeen = 0;
+				}
+
+			}
+
+			//for (int j=0; j<substr_len; j++) {
+			//	cerr << S.substr(i-partial[j].currSubstr.length()-partial[j].totalSeen*substr_len+1, partial[j].totalSeen*substr_len) << ' ' << partial[j].currSubstr << endl;
+			//}
+		}
+
+		return result;
+	}
+};
+
+int main() {
+	string s;
+	cin >> s;
+
+	string small;
+	vector<string> L;
+	while (cin >> small)
+		L.push_back(small);
+
+	Solution sol;
+
+	vector<int> result = sol.findSubstring(s, L);
+
+	//abort();
+	
+	cout << result << endl;
+
+	return 0;
+}

@@ -1,0 +1,64 @@
+pre:
+4
+2
+5
+1
+6
+3
+7
+
+in:
+1
+2
+4
+5
+3
+6
+7
+
+post:
+7
+3
+6
+1
+5
+2
+4
+
+  start_pre = 0 end_pre = 7 start_in = 0
+  root = 1
+  construct left
+    start_pre = 0 end_pre = 3 start_in = 1
+    root = 2
+    construct left
+      start_pre = 0 end_pre = 1 start_in = 2
+      root = 4
+      construct left
+        start_pre = 0 end_pre = 0 start_in = 3
+      construct right
+        start_pre = 1 end_pre = 1 start_in = 3
+    construct right
+      start_pre = 2 end_pre = 3 start_in = 3
+      root = 5
+      construct left
+        start_pre = 2 end_pre = 2 start_in = 4
+      construct right
+        start_pre = 3 end_pre = 3 start_in = 4
+  construct right
+    start_pre = 4 end_pre = 7 start_in = 4
+    root = 3
+    construct left
+      start_pre = 4 end_pre = 5 start_in = 5
+      root = 6
+      construct left
+        start_pre = 4 end_pre = 4 start_in = 6
+      construct right
+        start_pre = 5 end_pre = 5 start_in = 6
+    construct right
+      start_pre = 6 end_pre = 7 start_in = 6
+      root = 7
+      construct left
+        start_pre = 6 end_pre = 6 start_in = 7
+      construct right
+        start_pre = 7 end_pre = 7 start_in = 7
+Pass

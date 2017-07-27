@@ -1,0 +1,6 @@
+#!/bin/bash
+
+mkdir -p $1
+cd $1
+ln /home/bacholic/program/leetcode/c++/Makefile
+

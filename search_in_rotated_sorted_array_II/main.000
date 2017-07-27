@@ -1,0 +1,120 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+string ind("");
+
+class Solution {
+	bool bisection(int A[], int start, int end, int target) {
+
+		//cerr << ind << "bisection: start = " << start << "  end = " << end << endl;
+
+		if (start == end)
+			return false;
+
+		if (start+1 == end) {
+			if (A[start] == target)
+				return true;
+			else
+				return false;
+		}
+
+		if (target < A[start] || target > A[end-1])
+			return false;
+
+		int mid = (start+end)/2;
+
+		if (A[mid] <= target)
+			return bisection(A, mid, end, target);
+		else
+			return bisection(A, start, mid, target);
+	}
+
+	bool search_func(int A[], int start, int end, int target){
+		bool retVal;
+
+		//ind += "  ";
+
+		//cerr << ind << "search_func: start = " << start << "  end = " << end << "  target = " << target << endl;
+
+		if (start == end) {
+			//ind = ind.substr(0, ind.length()-2);
+			return false;
+		}
+
+		if (start + 1 == end) {
+			if (A[start] == target)
+				retVal = true;
+			else
+				retVal = false;
+			
+			//ind = ind.substr(0, ind.length()-2);
+
+			return retVal;
+		}
+
+		int mid = (start+end)/2;
+
+
+		if (A[mid] > A[start]) {// mid on the left segment
+			if (target <= A[mid] && target >= A[start]) {
+				retVal = bisection(A, start, mid+1, target);
+			}
+			else {
+				retVal = search_func(A, mid+1, end, target);
+			}
+		}
+		else {
+			if (A[mid] < A[end-1]) { // mid on the right segment
+				if (target >= A[mid] && target <= A[end-1]) {
+					retVal = bisection(A, mid, end, target);
+				}
+				else {
+					retVal = search_func(A, start, mid, target);
+				}
+			}
+			else { // indeterminate case
+				if (target == A[mid])
+					retVal = true;
+
+				if (search_func(A, start, mid, target))
+					retVal = true;
+				else
+					retVal = search_func(A, mid, end, target);
+			}
+		}
+
+		//ind = ind.substr(0, ind.length()-2);
+
+		return retVal;
+	}
+
+	public:
+	bool search(int A[], int n, int target) {
+		if (n == 0)
+			return false;
+
+		return search_func(A, 0, n, target);
+	}
+};
+
+int main() {
+	int target;
+
+	cin >> target;
+
+	int num, n = 0;
+	int *A = new int [1000];
+
+	while (cin >> num)
+		A[n++] = num;
+
+	cout << "n = " << n << endl;
+
+	Solution sol;
+
+	cout << ((sol.search(A, n, target))?"yes":"no") << endl;
+
+	return 0;
+}

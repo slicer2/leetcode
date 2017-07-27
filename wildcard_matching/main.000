@@ -1,0 +1,172 @@
+#include <iostream>
+#include <string>
+#include <list>
+#include <vector>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+
+	list<string> getToks(const char *pat) {
+		list<string> res;
+		string tok(1, pat[0]);
+
+		for (const char *ch = pat+1; (*ch) != '\0'; ch++) {
+			switch (*ch) {
+				case '*':
+					if (tok.back() != '*') {
+						res.push_back(tok);
+						tok = "*";
+					}
+
+					break;
+				default:
+					if (tok.back() == '*') {
+						res.push_back(tok);
+						tok = (*ch);
+					}
+					else
+						tok.push_back(*ch);
+			}
+		}
+
+		res.push_back(tok);
+
+		return res;
+	}
+
+	vector<int> kmp(const string &pat) {
+		vector<int> pi(pat.length());
+
+		pi[0] = 0;
+
+		int q = 0;
+
+		for (int i=1; i<(int)pat.length(); i++) {
+			while (q > 0 && pat[i] != '?' && pat[q] != '?' && pat[i] != pat[q])
+				q = pi[q-1];
+
+			if (pat[i] == '?' || pat[q] == '?' || pat[i] == pat[q])
+				q++;
+
+			pi[i] = q;
+		}
+
+		return pi;
+	}
+
+	int wMatch(const string &str, int start, int len, const string &pat) {
+		vector<int> pi = kmp(pat);
+
+		//cerr << "pat = " << pat << "   pi = " << pi << endl;
+
+		int q = 0;
+
+		for (int i=start; i<start+len; i++) {
+			while (q > 0 && pat[q] != '?' && str[i] != pat[q])
+				q = pi[q-1];
+
+			if (pat[q] == '?' || str[i] == pat[q])
+				q++;
+
+			if (q == (int)pat.length())
+				return i-q+1;
+		}
+
+		return -1;
+	}
+
+	public:
+
+	bool isMatch(const char *str, const char *pat) {
+		if (pat[0] == '\0') {
+			if (str[0] == '\0')
+				return true;
+			else
+				return false;
+		}
+
+		list<string> toks = getToks(pat);
+
+		//cerr << "toks: " << toks << endl;
+
+		string s(str);
+
+		string p(pat);
+
+		int start = 0;
+
+		int len = s.length();
+
+		if (!toks.empty()) {
+			if (toks.front() != "*") {
+				if( (int)toks.front().length() <= len && wMatch( s, 0, toks.front().length(), toks.front() ) != -1) {
+					start += toks.front().length();
+					len -= toks.front().length();
+					toks.pop_front();
+				}
+				else
+					return false;
+			}
+		}
+		else {
+			if (len > 0)
+				return false;
+			else
+				return true;
+		}
+
+		if (!toks.empty()) {
+			if (toks.back() != "*") {
+				if ((int)toks.back().length() <= len && wMatch(s, s.length()-toks.back().length(), toks.back().length(), toks.back()) != -1) {
+					len -= toks.back().length();
+					toks.pop_back();
+				}
+				else
+					return false;
+			}
+		}
+		else {
+			if (len > 0)
+				return false;
+			else
+				return true;
+		}
+
+		int matchPos;
+
+		while (!toks.empty()) {
+			if (toks.front() != "*") {
+				if ((matchPos = wMatch(s, start, len, toks.front())) != -1) {
+					//cerr << "matching " << s.substr(start, len) << " with " << toks.front() << " successful" << endl;
+
+					len -= matchPos-start+toks.front().length();
+					start = matchPos + toks.front().length();
+				}
+				else {
+					//cerr << "matching " << s.substr(start, len) << " with " << toks.front() << " unsuccessful" << endl;
+					return false;
+				}
+			}
+
+			toks.pop_front();
+		}
+
+		return true;
+	}
+
+};
+
+int main() {
+	string str, pat;
+	cin >> str >> pat;
+
+	cout << "str = " << str << "    pat = " << pat << endl;
+
+	Solution sol;
+
+	cout << sol.isMatch(str.c_str(), pat.c_str()) << endl;
+
+	return 0;
+}

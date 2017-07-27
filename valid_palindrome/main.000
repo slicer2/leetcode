@@ -1,0 +1,49 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+class Solution {
+	public:
+		bool isPalindrome(string s) {
+			string s1;
+
+			for (string::iterator it_ch = s.begin(); it_ch != s.end(); it_ch++) {
+				if ( (*it_ch) >= 'A' && (*it_ch) <= 'Z' )
+					(*it_ch) = (*it_ch) + ('a'-'A');
+
+				if ( ((*it_ch) >= 'a' && (*it_ch) <= 'z') || ((*it_ch) >= '0' && (*it_ch) <= '9') )
+					s1 += (*it_ch);
+			}
+
+			cout << s << endl;
+			cout << s1 << endl;
+
+			string::iterator f_it;
+			string::reverse_iterator r_it;
+
+			if (s1.empty())
+				return true;
+
+			unsigned int i;
+			for (i=0; i<s1.length()/2; i++)
+				if (s1[i] != s1[s1.length()-1-i])
+					break;
+
+			if (i >= s1.length()/2)
+				return true;
+			else
+				return false;
+		}
+};
+
+int main() {
+	string s;
+
+	getline(cin, s);
+
+	Solution sol;
+	cout << ( (sol.isPalindrome(s))? "yes":"no" ) << endl;
+	return 0;
+}
+

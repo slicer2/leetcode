@@ -1,0 +1,147 @@
+#include <iostream>
+#include <unordered_set>
+#include <string>
+#include <vector>
+#include <list>
+#include <stack>
+#include <utility>
+#include <cstdlib>
+
+#define MAX(x, y) ((x>y)?x:y)
+
+using namespace std;
+
+template <typename T>
+ostream & operator<< (ostream &os, vector<T> & T_ref) {
+	typename vector<T>::iterator it;
+
+	for (it = T_ref.begin(); it != T_ref.end(); it++) 
+		os << (*it) << ' ';
+
+	os << endl;
+
+	return os;
+}
+
+template <typename T1, typename T2>
+ostream & operator<< (ostream &os, const pair<T1, T2>& P_ref) {
+	os << P_ref.first;
+
+	return os;
+}
+
+class Solution {
+	int max_len(unordered_set<string> &dict) {
+		int max_l = 0;
+
+		unordered_set<string>::iterator it = dict.begin();
+		for (; it != dict.end(); it++)
+			if ( (*it).length() > max_l)
+				max_l = (*it).length();
+
+		return max_l;
+	}
+	public:
+	vector<string> wordBreak(string s, unordered_set<string> &dict) {
+		vector< vector<int> > breakable;
+		breakable.resize(s.length());
+		vector<string> sentences;
+		string sentence;
+		stack<pair<int, int> > stack_p;
+		list<pair<int, int> > stack_s;
+
+		int max_l = max_len(dict);
+
+		for (int i=0; i<s.length(); i++) {
+			if ( dict.find(s.substr(0, i+1)) != dict.end() )
+				breakable[i].push_back(0);
+
+			for (int j=MAX(0, i-max_l); j<i; j++) {
+				if (breakable[j].size() && dict.find(s.substr(j+1, i-j)) != dict.end() ) {
+					breakable[i].push_back(j+1);
+				}
+			}
+		}
+
+		/**
+		 *for (vector<vector<int> >::iterator b_it = breakable.begin(); b_it != breakable.end(); b_it++)
+		 *	cout << (*b_it);
+		 **/
+
+		vector<int>::iterator it;
+		pair<int, int> str_idx;
+
+		int pos = s.length() - 1;
+
+
+		if (breakable[pos].size()) {
+			while (pos >= 0) {
+				for (it = breakable[pos].begin(); it != breakable[pos].end(); it++)
+					stack_p.push(make_pair(*it, pos));
+
+				str_idx = stack_p.top();
+				stack_p.pop();
+
+				pos = str_idx.first - 1;
+				stack_s.push_front(str_idx);
+			}
+
+
+			while (!stack_s.empty()) {
+				sentence = "";
+				for (list<pair<int, int> >::iterator it_word = stack_s.begin(); it_word != stack_s.end(); it_word++) {
+					sentence = sentence + s.substr(it_word->first, it_word->second-it_word->first+1) + "|";
+				}
+
+				sentence = sentence.substr(0, sentence.length()-1);
+
+				sentences.push_back(sentence);
+
+
+				if (!stack_p.empty()) {
+
+					str_idx = stack_p.top();
+					while ( !stack_s.empty() && stack_s.front().second <= str_idx.second )
+						stack_s.pop_front();
+
+					stack_p.pop();
+
+					pos = str_idx.first - 1;
+					stack_s.push_front(str_idx);
+
+					while (pos >= 0) {
+						for (it = breakable[pos].begin(); it != breakable[pos].end(); it++)
+							stack_p.push(make_pair(*it, pos));
+
+						str_idx = stack_p.top();
+						stack_p.pop();
+
+						pos = str_idx.first - 1;
+						stack_s.push_front(str_idx);
+					}
+				}
+				else
+					stack_s.clear();
+			}
+		}
+
+
+		return sentences;
+	}
+};
+
+int main() {
+	string s, longword;
+	unordered_set<string> dict;
+
+	cin>>longword;
+
+	while (cin >> s)
+		dict.insert(s);
+
+	Solution sol;
+
+	vector<string> ss = sol.wordBreak(longword, dict);
+
+	cout << ss;
+}

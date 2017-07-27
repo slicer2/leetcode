@@ -1,0 +1,46 @@
+#include <iostream>
+
+using namespace std;
+
+class Solution {
+	public:
+		int firstMissingPositive(int A[], int n) {
+			int i;
+
+			for (i=0; i<n; i++)
+				if (A[i] < 0) A[i] = 0;
+
+			for (i=0; i<n; i++) {
+				if (A[i] <= 0) continue;
+
+				int curr = A[i];
+
+				while (curr <= n && A[curr-1] > 0) {
+					int temp = A[curr-1];
+					A[curr-1] = -1;
+					curr = temp;
+				}
+
+				if (curr <= n) A[curr-1] = -1;
+			}
+
+			for (i=0; i<n && A[i]==-1; i++);
+
+			if (i<n) return i+1;
+			else return n+1;
+		}
+};
+
+int main() {
+	int n;
+
+	cin >> n;
+
+	int * A = new int[n];
+
+	for (int i=0; i<n; i++) cin >> A[i];
+
+	Solution sol;
+
+	cout << sol.firstMissingPositive(A, n) << endl;
+}

@@ -1,0 +1,100 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <iterator>
+#include <string>
+#include <map>
+#include "dan.h"
+
+using namespace std;
+
+string ind("");
+
+class Solution {
+	vector<vector<int> > res;
+
+	struct Partial {
+		int sum;
+		vector<int> assignment;
+
+		Partial() { sum = 0; }
+	};
+
+	void combination(Partial &partial, vector<int> &cand, vector<int> &cnt, int target) {
+		//ind += "  ";
+
+		//cerr << //ind << "partial = " << partial.assignment << "   sum = " << partial.sum << endl;
+
+		if (partial.sum > target) {
+			//ind = //ind.substr(0, //ind.length()-2);
+			return;
+		}
+
+		if (partial.sum == target) {
+			//cerr << //ind << "bingo!!!!" << endl;
+			res.push_back(partial.assignment);
+			//ind = //ind.substr(0, //ind.length()-2);
+			return;
+		}
+
+		int prevSum = partial.sum;
+		int prevAssignmentSize = partial.assignment.size();
+
+		if (partial.assignment.size() < cand.size()) {
+			for (int i=0; i<=cnt[prevAssignmentSize]; i++) {
+				partial.sum = prevSum + i*cand[partial.assignment.size()];
+				partial.assignment.push_back(i);
+				combination(partial, cand, cnt, target);
+				partial.assignment.pop_back();
+			}
+		}
+			
+		//ind = //ind.substr(0, //ind.length()-2);
+	}
+
+	public:
+	vector<vector<int> > combinationSum2(vector<int> &candidates, int target) {
+		map<int, int> count;
+		vector<int> cand, cnt;
+
+		for (auto &x: candidates)
+			count[x]++;
+
+		for (map<int, int>::iterator it = count.begin(); it != count.end(); it++) {
+			cand.push_back(it->first);
+			cnt.push_back(it->second);
+		}
+
+		Partial partial;
+
+		combination(partial, cand, cnt, target);
+
+		vector<vector<int> > result;
+
+		for (auto &x: res) {
+			vector<int> row;
+
+			for (int i=0; i<(int)x.size(); i++)
+				for (int k=0; k<x[i]; k++)
+					row.push_back(cand[i]);
+
+			//cerr << x<< endl;
+			result.push_back(row);
+		}
+
+		return result;
+	}
+};
+
+int main() {
+	int target;
+	vector<int> candidates;
+	cin >> target;
+	cin.ignore(100, '\n');
+	cin >> candidates;
+
+	Solution sol;
+	cout << sol.combinationSum2(candidates, target) << endl;
+
+	return 0;
+}

@@ -1,0 +1,86 @@
+#include <vector>
+#include "dan.h"
+#include <iostream>
+
+using namespace std;
+
+class Solution {
+	private:
+		bool *visited, *required;
+
+		bool canFinishCourse(int i, int n, vector<vector<int>> &pre) {
+			for (int i=0; i<n; i++)
+				required = false;
+
+			visited[i] = true;
+			required[i] = true;
+
+			stack<int> sta;
+			sta.push(i);
+
+			while (!sta.empty()) {
+				int course = sta.top();
+				sta.pop();
+
+				for (unsigned j=1; j<pre[course].size(); j++) {
+					if (required[ pre[course][j] ])
+						return false;
+					else {
+						required[ pre[course][j] ] = true;
+
+						if (!visited[ pre[course][j] ]) {
+							visited[ pre[course][j] ] = true;
+							sta.push( pre[course][j] );
+						}
+					}
+				}
+			}
+
+			return true;
+		}
+	public:
+		bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+			bool ret_val = true;
+
+			visited = new bool[numCourses];
+			required = new bool[numCourses];
+
+			for (int i=0; i<numCourses; i++)
+				visited[i] = false;
+
+			for (int i=0; i<numCourses; i++) {
+				if (!visited[ prerequisites[i][0] ]) {
+					if (!canFinishCourse(i, numCourses, prerequisites)) {
+						ret_val = false;
+						break;
+					}
+				}
+			}
+
+			delete [] visited;
+			delete [] required;
+			return ret_val;
+		}
+};
+
+int main() {
+	int numCourses;
+	vector<vector<int> > prerequisites;
+	vector<int> temp;
+
+	cin >> numCourses;
+	cin.ignore(100, '\n');
+
+	while (cin >> temp) {
+		prerequisites.push_back(temp);
+		temp.clear();
+	}
+
+	Solution sol;
+	if (sol.canFinish(numCourses, prerequisites))
+		cout << "yes" << endl;
+	else
+		cout << "no" << endl;
+
+	return 0;
+}

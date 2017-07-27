@@ -1,0 +1,140 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cstdlib>
+
+using namespace std;
+
+template <typename T>
+ostream & operator << (ostream &os, vector<T> &v) {
+	typename vector<T>::iterator it = v.begin();
+	for (; it != v.end(); it++)
+		os << (*it) << ' ';
+
+	return os;
+}
+
+template <typename T>
+ostream & operator << (ostream &os, vector<vector<T> > &v) {
+	typename vector<vector<T> >::iterator it = v.begin();
+	for (; it != v.end(); it++)
+		os << (*it) << endl;
+
+	return os;
+}
+
+class Solution {
+
+	vector<vector<int> > rightIdx;
+
+	string s;
+
+	vector<vector<int> > manacher (string s) {
+		vector<int> result;
+		int tstep;
+
+		int len_result = s.length()*2 + 1;
+
+		result.resize(len_result);
+
+		result[0] = 0;
+
+		int c = 0;
+
+		for (int i=1; i<len_result; i++) {
+			if (i > c+result[c]) {
+				tstep = 0;
+				while (  i-tstep-1 >= 0 && i+tstep+1 < len_result && ( (i+tstep+1) % 2 == 0 || s[(i-tstep-1)/2] == s[(i+tstep+1)/2] ) ) 
+					tstep++;
+
+				c = i;
+
+				result[i] = tstep;
+			}
+			else {
+				if (i+result[2*c-i] >= c+result[c]) {
+					tstep = c+result[c]-i;
+					while (  i-tstep-1 >= 0 && i+tstep+1 < len_result && ( (i+tstep+1) % 2 == 0 || s[(i-tstep-1)/2] == s[(i+tstep+1)/2] ) ) 
+						tstep++;
+
+					c = i;
+
+					result[i] = tstep;
+				}
+				else 
+					result[i] = result[2*c-i];
+			}
+
+		}
+
+
+		vector<vector<int> > palindrome;
+		palindrome.resize(s.length());
+
+		int actual_len, actual_left, actual_right;
+
+		for (int i=0; i<result.size()-1; i++) {
+			if (i % 2)
+				actual_len = result[i]/2*2 + 1;
+			else
+				actual_len = (result[i]+1)/2*2;
+
+			actual_left = (i-result[i])/2;
+			actual_right = (i+result[i])/2-1;
+
+			while (actual_len > 0) {
+				palindrome[actual_left].push_back(actual_right);
+				actual_left++;
+				actual_right--;
+				actual_len -= 2;
+			}
+		}
+
+		return palindrome;
+	}
+
+	int get_min_cut(int start_idx) {
+		int curr_min, min_cut = s.length();
+
+		for (vector<int>::iterator it = rightIdx[start_idx].begin();
+			it != rightIdx[start_idx].end(); it++) {
+
+			if (*it == s.length()-1) {
+				return 0;
+			}
+			else {
+				int curr_min = get_min_cut(*it+1)+1;
+
+				if (curr_min < min_cut)
+					min_cut = curr_min;
+			}
+		}
+
+		return min_cut;
+	}
+
+	public:
+	int minCut(string str) {
+
+		s = str;
+
+		if (s.length() == 0)
+			return 0;
+
+		rightIdx = manacher(s);
+
+		return get_min_cut(0);
+	}
+};
+
+int main() {
+	string s;
+
+	cin >> s;
+
+	Solution sol;
+
+	cout << sol.minCut(s) << endl;
+
+	return 0;
+}

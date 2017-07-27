@@ -1,0 +1,149 @@
+//Design and implement a data structure for Least Recently Used (LRU) cache. It should support the following operations: get and set.
+//
+//get(key) - Get the value (will always be positive) of the key if the key exists in the cache, otherwise return -1.
+//set(key, value) - Set or insert the value if the key is not already present. When the cache reached its capacity, it should invalidate the least recently used item before inserting a new item.
+
+#include <iostream>
+#include <map>
+#include <cassert>
+#include <utility>
+
+using namespace std;
+
+class LRUCache{
+	typedef int TimeStamp;
+	typedef int Key;
+
+
+	struct ValueRecord;
+
+	typedef map<TimeStamp, map<Key, ValueRecord>::iterator> LookupByTimeStamp;
+
+	struct ValueRecord {
+		int val;
+		LookupByTimeStamp::iterator ts_it;
+		ValueRecord(int val_in, LookupByTimeStamp::iterator ts_it_in):val(val_in), ts_it(ts_it_in) {}
+	};
+
+	typedef map<Key, ValueRecord> LookupByKey;
+
+	TimeStamp ts;
+
+	int cap;
+
+	LookupByTimeStamp lut_ts;
+
+	LookupByKey lut_key;
+
+	void UpdateTimeStamp(LookupByKey::iterator it) {
+		LookupByTimeStamp::value_type new_ts = make_pair(ts, it);
+		lut_ts.erase( (it->second).ts_it );
+		pair<LookupByTimeStamp::iterator, bool> ins_result = lut_ts.insert(new_ts);
+
+		assert(ins_result.second);
+
+		(it->second).ts_it = ins_result.first;
+	}
+
+	void display() {
+		LookupByTimeStamp::iterator it;
+
+		//cerr <<"-----------------------" << endl << " ts = " << ts << endl;
+		for (it = lut_ts.begin(); it != lut_ts.end(); it++) {
+			//cerr << it->first << '\t' << it->second->first << '\t' << (it->second->second).val << endl;
+		}
+	}
+
+	public:
+	LRUCache(int capacity) {
+		ts = 0;
+		cap = capacity;
+	}
+
+	int get(int key) {
+		ts++;
+
+		LookupByKey::iterator it = lut_key.find(key);
+
+		if (it != lut_key.end()) { 
+			// found, update its time stamp
+			UpdateTimeStamp(it);
+
+			//display();
+			return (it->second).val;
+		}
+		else {
+			//display();
+			return -1;
+		}
+	}
+
+	void set(int key, int value) {
+
+		ts++;
+
+		LookupByKey::iterator it = lut_key.find(key);
+
+		if (it != lut_key.end()) {
+			// update its ts
+			//cerr << "found key " << key << ", updating time stamp" << endl;
+			UpdateTimeStamp(it);
+
+			(it->second).val = value;
+		}
+		else {
+			//cerr << "cannot find key " << key << ", inserting (" << key << ", " << value << ")" << endl;
+
+			if (lut_key.size() == cap) {
+				//cerr << "capacity is reached, deleting least recently used" << endl;
+
+				LookupByTimeStamp::iterator it = lut_ts.begin();
+
+				//cerr << "deleted (" << it->first << ", " << it->second->first << ", " << (it->second->second).val << ")" << endl;
+
+				lut_key.erase(it->second);
+				lut_ts.erase(it);
+
+			}
+
+			//cerr << "now inserting (" << ts << ", " << key << ", " << value << ")" << endl;
+
+			pair<LookupByTimeStamp::iterator, bool> ts_ins_result = lut_ts.insert( make_pair(ts, lut_key.end()) );
+
+			assert( ts_ins_result.second );
+
+			pair<LookupByKey::iterator, bool> key_ins_result = lut_key.insert( make_pair(key, ValueRecord(value, ts_ins_result.first)) );
+
+			ts_ins_result.first->second = key_ins_result.first;
+		}
+
+		//display();
+	}
+};
+
+
+int main() {
+
+	int op, key, val;
+
+	int capacity;
+
+	cin >> capacity;
+
+	LRUCache lru(capacity);
+
+	while(cin >> op >> key >> val) {
+		if (op) {
+			//cerr << "inserting (" << key << ", " << val << ")" << endl;
+			cerr << "setting (" << key << ", "  << val << ")" << endl;
+			lru.set(key, val);
+		}
+		else {
+			//cerr << "getting (" << key << ", " << val << ")" << endl;
+			cerr << "getting " << key << endl;
+			cerr << "got " << lru.get(key) << endl;
+		}
+	}
+
+	return 0;
+}

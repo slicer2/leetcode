@@ -1,0 +1,85 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include "dan.h"
+
+using namespace std;
+
+string indent("");
+
+class Solution {
+	vector<string> result;
+
+	bool isValid(string &s, vector<int> &partial, int n) {
+		if (n == 0)
+			return true;
+
+		if (partial[n] - partial[n-1] > 3)
+			return false;
+
+		if (s[partial[n-1]+1] == '0' && partial[n]-partial[n-1] > 1)
+			return false;
+
+		if (n == 4 && partial[4] != (int)s.length()-1)
+			return false;
+
+		int last = stoi(s.substr(partial[n-1]+1, partial[n]-partial[n-1]));
+
+		if (last <= 255)
+			return true;
+		else
+			return false;
+	}
+
+	void bt(string & s, vector<int> &partial, int n) {
+		//indent += "  ";
+		//cout << indent << n << "   " << partial[n] << endl;
+
+		if (!isValid(s, partial, n)) {
+			//indent = indent.substr(0, indent.length()-2);
+			return;
+		}
+
+		if (n == 4 && partial[4] == (int)s.length()-1) {
+			string ip = s.substr(0, partial[1]+1)
+				+ "." + s.substr(partial[1]+1, partial[2]-partial[1])
+				+ "." + s.substr(partial[2]+1, partial[3]-partial[2])
+				+ "." + s.substr(partial[3]+1, s.length()-1-partial[3]);
+
+			result.push_back(ip);
+
+			//cout << "bingo" << endl;
+
+			//indent = indent.substr(0, indent.length()-2);
+			return;
+		}
+
+		for (int i = partial[n]+1; i < (int)s.length(); i++) {
+			partial[n+1] = i;
+			bt(s, partial, n+1);
+		}
+
+		//indent = indent.substr(0, indent.length()-2);
+	}
+
+	public:
+	vector<string> restoreIpAddresses(string s) {
+		vector<int> partial(4);
+		partial[0] = -1;
+
+		bt(s, partial, 0);		
+		return result;
+	}
+};
+
+int main() {
+	string s;
+
+	cin >> s;
+
+	Solution sol;
+
+	cout << sol.restoreIpAddresses(s) << endl;
+
+	return 0;
+}

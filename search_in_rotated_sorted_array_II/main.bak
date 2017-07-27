@@ -1,0 +1,72 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+string ind("");
+
+class Solution {
+
+	int search_func(int A[], int start, int end, int target){
+
+		ind += "  ";
+
+		cerr << ind << "search_func: start = " << start << "  end = " << end << "  target = " << target << endl;
+
+		if (start == end) {
+			ind = ind.substr(0, ind.length()-2);
+			return -1;
+		}
+
+		if (start + 1 == end) {
+			if (A[start] == target) {
+
+				ind = ind.substr(0, ind.length()-2);
+				return start;
+			}
+			else {
+				ind = ind.substr(0, ind.length()-2);
+				return -1;
+			}
+		}
+
+		int mid = (start+end)/2;
+
+		int result = search_func(A, start, mid, target);
+
+		if (result == -1)
+			return search_func(A, mid, end, target);
+		else
+			return result;
+	}
+
+	public:
+	int search(int A[], int n, int target) {
+		if (n == 0)
+			return -1;
+
+		return search_func(A, 0, n, target);
+	}
+};
+
+int main() {
+	int target;
+
+	cin >> target;
+
+	int num, n = 0;
+	int *A = new int [1000];
+
+	while (cin >> num)
+		A[n++] = num;
+
+	cout << "n = " << n << endl;
+
+	Solution sol;
+
+	int index = sol.search(A, n, target);
+
+	cout << index << "  " << ((index == -1)?-1:A[index]) << endl;
+
+	return 0;
+}

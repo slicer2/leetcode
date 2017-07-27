@@ -1,0 +1,235 @@
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+#include <utility>
+#include <cassert>
+#include <cstdlib>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	class Unvisited {
+
+		vector<pair<int, unordered_map<string, int>::iterator> > heap;
+		int heap_tail;
+
+		unordered_map<string, int> lut;
+
+		void swap(int i, int j) {
+			pair<int, unordered_map<string, int>::iterator> t = heap[i];
+			heap[i] = heap[j];
+			heap[j] = t;
+
+			heap[i].second->second = i;
+			heap[j].second->second = j;
+
+			//for (int i=0; i<heap_tail; i++) cerr << heap[i].first << ' ';
+			//cerr << endl;
+		}
+
+		void sift_up(int i) {
+
+			while (i > 0) {
+				if (heap[i].first < heap[(i-1)/2].first) {
+					swap(i, (i-1)/2);
+					i = (i-1)/2;
+				}
+				else
+					break;
+			}
+		}
+
+		void sift_down(int i) {
+			while (2*i+1 < heap_tail) {
+				int left = 2*i+1, right = 2*i+2;
+				int smallest = i;
+
+				if (left < heap_tail)
+					if (heap[left].first < heap[smallest].first)
+						smallest = left;
+
+				if (right < heap_tail)
+					if (heap[right].first < heap[smallest].first)
+						smallest = right;
+
+				if (i != smallest) {
+					swap(i, smallest);
+					i = smallest;
+				}
+				else
+					break;
+			}
+		}
+
+		void remove() {
+			if (heap_tail == 1) {
+				heap_tail = 0;
+				lut.clear();
+			}
+			else {
+				lut.erase(heap[0].second);
+				heap[0] = heap[--heap_tail];
+				sift_down(0);
+			}
+		}
+
+		public:
+		Unvisited(int h_size):heap(h_size+2), heap_tail(0) {}
+
+		void print() {
+			cerr << heap_tail << " words unvisited:" << endl;
+			
+			for (int i=0; i<heap_tail; i++)
+				cerr << heap[i].second->first << '\t' << i << '\t' << heap[i].first << endl;
+
+			cerr << endl;
+		}
+
+		void push(pair<string, int> word_dist) {
+
+			unordered_map<string, int>::iterator f_it = lut.find(word_dist.first);
+
+			if (f_it != lut.end())
+				return;
+
+			pair<unordered_map<string, int>::iterator, bool> ins_result = lut.insert(make_pair(word_dist.first, 0));
+
+			heap[heap_tail++] = make_pair(word_dist.second, ins_result.first);
+
+			ins_result.first->second = heap_tail-1;
+		}
+
+		void heapify() {
+			for (int i=heap_tail-1; i>=0; i--)
+				sift_down(i);
+		}
+
+		pair<string, int> top() {
+			return make_pair(heap[0].second->first, heap[0].first);
+		}
+
+		pair<string, int> pop() {
+			pair<string, int> r = make_pair(heap[0].second->first, heap[0].first);
+
+			remove();
+
+			return r;
+		}
+
+		bool empty() {
+			return heap_tail == 0;
+		}
+
+		void changeDist(string s, int d) {
+			int loc = lut[s];
+
+			heap[loc].first = d;
+
+			sift_up(loc);
+
+			sift_down(loc);
+		}
+
+		int getDist(string s) {
+			unordered_map<string, int>::iterator it = lut.find(s);
+
+			if (it == lut.end())
+				return -1;
+			else
+				return heap[it->second].first;
+		}
+
+	};
+
+	public:
+		int ladderLength(string start, string end, unordered_set<string> &dict) {
+
+			int ladder_lim = dict.size() + 1;
+
+			Unvisited unvisited(dict.size());
+
+			//unordered_set<string> visited;
+
+			for (auto &x: dict) {
+				if (x != start)
+					unvisited.push(make_pair(x, ladder_lim));
+				else
+					unvisited.push(make_pair(x, 0));
+			}
+
+			unvisited.push(make_pair(start, 0));
+
+			//unvisited.print();
+
+			unvisited.heapify();
+
+			//unvisited.print();
+
+
+			// dijkstra
+			pair<string, int> currNode;
+
+			while (!unvisited.empty() && (unvisited.top()).second != ladder_lim) {
+				currNode = unvisited.pop();
+
+				//cerr << "currNode: (" << currNode.first << ", " << currNode.second << ")" << endl;
+
+				if (currNode.first == end)
+					return currNode.second;
+
+
+				for (unsigned int i=0; i<start.length(); i++) {
+
+					string possible_neighbor  = currNode.first;
+
+					char original_ch = possible_neighbor[i];
+
+					for (char ch = 'a'; ch <= 'z'; ch++) {
+						if (ch == original_ch)
+							continue;
+
+						possible_neighbor[i] = ch;
+
+						if (possible_neighbor == end)
+							return currNode.second+2;
+
+						int distToUnvisited;
+
+						if ( (distToUnvisited = unvisited.getDist(possible_neighbor)) >= 0 ) {
+							if (distToUnvisited > currNode.second + 1) {
+								unvisited.changeDist(possible_neighbor, currNode.second+1);
+								//cerr << "updating dist to " << possible_neighbor << '\t' << currNode.second + 1 << endl;
+							}
+						}
+					}
+				}
+
+				//visited.insert(currNode.first);
+			}
+
+			return 0;
+		}
+};
+
+int main() {
+	unordered_set<string> dict;
+	string s;
+
+	string start, end;
+
+	cin >> start >>  end;
+
+	while (cin >> s)
+		dict.insert(s);
+
+	cerr << start << "  " << end << "  " << dict.size() << endl;
+
+	Solution sol;
+
+	cout << sol.ladderLength(start, end, dict) << endl;
+
+	return 0;
+}

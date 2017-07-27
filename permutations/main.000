@@ -1,0 +1,56 @@
+#include <iostream>
+#include <vector>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+
+	vector<vector<int> > perm(vector<int> &num, int start) {
+		vector<vector<int> > result;
+
+		if (start + 1 == (int)num.size())
+			result.push_back(vector<int>(1, num[start]));
+		else
+			for(int i=start; i<(int)num.size(); i++) {
+				int t = num[start];
+				num[start] = num[i];
+				num[i] = t;
+
+				vector<vector<int> > temp = perm(num, start+1);
+
+				for (auto &x: temp) {
+					x.push_back(num[start]);
+					result.push_back(x);
+				}
+
+				t = num[start];
+				num[start] = num[i];
+				num[i] = t;
+			}
+
+		return result;
+	}
+	public:
+
+	vector<vector<int> > permute(vector<int> &num) {
+		vector<vector<int> > result;
+
+		if (num.size() == 0)
+			return result;
+
+		return perm(num, 0);
+	}
+
+};
+
+int main() {
+	vector<int> num;
+	cin >> num;
+
+	Solution sol;
+
+	cout << sol.permute(num) << endl;
+
+	return 0;
+}

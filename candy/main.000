@@ -1,0 +1,55 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+	public:
+		int candy(vector<int> &ratings) {
+
+			if (ratings.empty()) return 0;
+
+			int result = 0;
+			vector<int> nCandy;
+			nCandy.resize(ratings.size());
+			
+			nCandy[0] = 1;
+
+			for (int i=1; i<ratings.size(); i++) {
+				if (ratings[i] > ratings[i-1]) {
+					nCandy[i] = nCandy[i-1] + 1;
+				}
+				else {
+					nCandy[i] = 1;
+				}
+			}
+
+			result = nCandy.back();
+			for (int i=ratings.size()-1; i>=1; i--) {
+				if (ratings[i] < ratings[i-1] && nCandy[i] >= nCandy[i-1]) {
+					nCandy[i-1] = nCandy[i] + 1;
+				}
+
+				result += nCandy[i-1];
+			}
+
+
+
+			return result;
+		}
+};
+
+int main() {
+	int num;
+	vector<int> ratings;
+
+	while (cin >> num) {
+		ratings.push_back(num);
+	}
+
+
+	Solution s;
+	cout << s.candy(ratings) << endl;
+
+	return 0;
+}

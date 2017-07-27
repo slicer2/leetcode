@@ -1,0 +1,95 @@
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <iterator>
+#include <string>
+#include "dan.h"
+
+using namespace std;
+
+string ind("");
+
+class Solution {
+	vector<vector<int> > res;
+
+	struct Partial {
+		int sum;
+		vector<int> assignment;
+
+		Partial() { sum = 0; }
+	};
+
+	void combination(Partial &partial, vector<int> &candidates, int target) {
+		//ind += "  ";
+
+		//cerr << //ind << "partial = " << partial.assignment << "   sum = " << partial.sum << endl;
+
+		if (partial.sum > target) {
+			//cerr << "bingo" << endl;
+			//ind = //ind.substr(0, //ind.length()-2);
+			return;
+		}
+
+		if (partial.sum == target) {
+			res.push_back(partial.assignment);
+			//ind = //ind.substr(0, //ind.length()-2);
+			return;
+		}
+
+		int prevSum = partial.sum;
+		int prevAssignmentSize = partial.assignment.size();
+
+		if (partial.assignment.size() < candidates.size()) {
+			for (int i=0; i<=(target-prevSum)/candidates[prevAssignmentSize]; i++) {
+				partial.sum = prevSum + i*candidates[partial.assignment.size()];
+				partial.assignment.push_back(i);
+				combination(partial, candidates, target);
+				partial.assignment.pop_back();
+			}
+		}
+			
+		//ind = //ind.substr(0, //ind.length()-2);
+	}
+
+	public:
+	vector<vector<int> > combinationSum(vector<int> &candidates, int target) {
+		sort(candidates.begin(), candidates.end());
+		vector<int>::iterator it = unique(candidates.begin(), candidates.end());
+
+		//cerr << "distance = " << distance (candidates.begin(), it) << endl;
+		candidates.resize( distance(candidates.begin(), it) );
+
+		//cerr << "candidates = " << candidates << endl;
+
+		Partial partial;
+
+		combination(partial, candidates, target);
+
+		vector<vector<int> > result;
+
+		for (auto &x: res) {
+			vector<int> row;
+
+			for (int i=0; i<(int)x.size(); i++)
+				for (int k=0; k<x[i]; k++)
+					row.push_back(candidates[i]);
+
+			result.push_back(row);
+		}
+
+		return result;
+	}
+};
+
+int main() {
+	int target;
+	vector<int> candidates;
+	cin >> target;
+	cin.ignore(100, '\n');
+	cin >> candidates;
+
+	Solution sol;
+	cout << sol.combinationSum(candidates, target) << endl;
+
+	return 0;
+}

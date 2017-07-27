@@ -1,0 +1,60 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	vector<int> getCharCount(string &s) {
+		vector<int> result(26, 0);
+		for (auto &x: s)
+			result[x-'a']++;
+
+		return result;
+	}
+
+	public:
+		vector<string> anagrams(vector<string> &strs) {
+			map<vector<int>, vector<int> > group;
+
+			for (int i=0; i<(int)strs.size(); i++) {
+				vector<int> cnt = getCharCount(strs[i]);
+				if (group.find(cnt) == group.end()) {
+					vector<int> dummy;
+					dummy.push_back(i);
+					group.insert(make_pair(cnt, dummy));
+				}
+				else {
+					group[cnt].push_back(i);
+				}
+			}
+
+			vector<string> result;
+
+			for (auto &x: group) {
+				for (auto &y: x.second)
+					result.push_back(strs[y]);
+			}
+
+			return result;
+		}
+};
+
+int main() {
+	vector<string> strs;
+	string s;
+
+	while (cin >> s)
+		strs.push_back(s);
+
+	Solution sol;
+
+	for (auto &x: sol.anagrams(strs))
+		cout << x << endl;
+
+	cout << endl;
+
+	return 0;
+}

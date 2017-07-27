@@ -1,0 +1,97 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include "dan.h"
+
+using namespace std;
+
+string ind("");
+
+class Solution {
+	vector<int> fact;
+
+	string getPerm(vector<int> &nums, int k){
+		//ind += "  ";
+
+		string res("");
+
+		if (k == 1) {
+			for (auto &x: nums)
+				res += to_string(x);
+
+			//cerr << ind << "res = " << res << endl;
+			//ind = ind.substr(0, ind.length()-2);
+			return res;
+		}
+
+		int i=0;
+
+		while (i < (int)nums.size() && fact[i] < k)
+			i++;
+
+		//cerr << ind << "i = " << i << endl;
+
+		if (i == (int)nums.size()) {
+			for(vector<int>::reverse_iterator r_it = nums.rbegin(); r_it != nums.rend(); r_it++)
+				res += to_string(*r_it);
+
+			//cerr << ind << "res = " << res << "  stop." << endl;
+
+			//ind = ind.substr(0, ind.length()-2);
+
+			return res;
+		}
+		else {
+			int skip = (k-1) / fact[i-1];
+
+			for (int j=0; j<(int)nums.size()-i-1; j++)
+				res += to_string(nums[j]);
+
+			res += to_string(nums[skip+(int)nums.size()-i-1]);
+
+			vector<int> nums1;
+
+			for (int j=(int)nums.size()-i-1; j<(int)nums.size(); j++)
+				if (j != skip+(int)nums.size()-i-1)
+					nums1.push_back(nums[j]);
+
+			//cerr << ind << "skip = " << skip << endl;
+			//cerr << ind << "res = " << res << endl;
+			//cerr << ind << "nums1 = " << nums1 << endl;
+			//cerr << ind << "new k = " << k-skip*fact[i-1] << endl;
+
+			res += getPerm(nums1, k-skip*fact[i-1]);
+		}
+
+		//ind = ind.substr(0, ind.length()-2);
+		return res;
+	}
+
+	public:
+	Solution () {
+		fact.resize(9);
+		fact[0] = 1;
+		for (int i=2; i<=9; i++)
+			fact[i-1] = i*fact[i-2];
+	}
+
+	string getPermutation(int n, int k) {
+		vector<int> nums;
+		for (int i=1; i<=n; i++)
+			nums.push_back(i);
+
+		return getPerm(nums, k);
+	}
+};
+
+int main() {
+	int n, k;
+
+	cin >> n >> k;
+
+	Solution sol;
+
+	cout << sol.getPermutation(n, k) << endl;
+
+	return 0;
+}

@@ -1,0 +1,86 @@
+#include <iostream>
+#include <queue>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	public:
+		vector<vector<int> > zigzagLevelOrder(TreeNode *root) {
+			vector<vector<int> > result;
+			vector<int> row;
+
+			if (!root)
+				return result;
+
+			queue<pair<TreeNode *, int> > q;
+			stack<pair<TreeNode *, int> > s;
+
+			q.push(make_pair(root, 0));
+
+			int currLevel = 0;
+
+			while (!q.empty()) {
+				row.clear();
+
+				while (!q.empty() && q.front().second == currLevel) {
+					pair<TreeNode *, int> p = q.front();
+					q.pop();
+					row.push_back(p.first->val);
+
+
+					if (currLevel % 2 == 0) {
+						if (p.first->left)
+							s.push(make_pair(p.first->left, currLevel+1));
+
+						if (p.first->right)
+							s.push(make_pair(p.first->right, currLevel+1));
+					}
+					else {
+						if (p.first->right)
+							s.push(make_pair(p.first->right, currLevel+1));
+
+						if (p.first->left)
+							s.push(make_pair(p.first->left, currLevel+1));
+					}
+
+				}
+
+				while (!s.empty()) {
+					q.push(s.top());
+					s.pop();
+				}
+
+				currLevel++;
+
+				result.push_back(row);
+			}
+
+
+			return result;
+		}
+};
+
+
+
+int main() {
+	TreeNode *root;
+
+	string s;
+
+	getline(cin, s);
+
+	cout << " s = " << s << endl;
+
+	root = constructBinaryTree(s);
+
+	preorder(root);
+
+	cout << endl;
+
+	Solution sol;
+
+	cout <<sol.zigzagLevelOrder(root)<< endl;
+
+	return 0;
+}

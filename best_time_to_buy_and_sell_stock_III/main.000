@@ -1,0 +1,73 @@
+/**
+ * best time to buy and sell stock in at most
+ * k trnsactions.
+ *
+ * this is a generalization of II from 2 to k
+ */
+#include <iostream>
+#include <vector>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	public:
+	int maxProfit(int k, vector<int> &prices) {
+
+		int n = prices.size();
+
+		if (n < 2 || k < 1)
+			return 0;
+
+		/**
+		 * A[j] is the max profit by at most k transactions up until day j
+		 * _A is A for previous k
+		 * B is the max profit by at most k transactions up until day j and
+		 * sell on day j. It allows buy and sell on the same day j but 
+		 * otherwise buy and sell on different days and a sell is followed 
+		 * only by a sell
+		 */
+
+		int maxp = 0;
+		for (int j=1; j<n; j++)
+			if (prices[j] > prices[j-1])
+				maxp += prices[j]-prices[j-1];
+
+		if (k > n/2)
+			return maxp;
+
+		vector<int> A(n);
+		int _A;
+
+		for (int i=0; i<k; i++) {
+			int B = 0;
+
+			for (int j=1; j<n; j++) {
+				_A = A[j];
+				A[j] = max(A[j-1], B+prices[j]-prices[j-1]);
+				B = max(_A, B+prices[j]-prices[j-1]);
+			}
+
+			if (A[n-1] == maxp)
+				break;
+		}
+
+		return A[n-1];
+	}
+};
+
+int main() {
+	int p, k;
+	vector<int> prices;
+
+	cin >> k;
+
+	while (cin >> p)
+		prices.push_back(p);
+
+	Solution sol;
+
+	cout << sol.maxProfit(k, prices) << endl;
+
+	return 0;
+}

@@ -1,0 +1,54 @@
+#include <iostream>
+#include <vector>
+#include <utility>
+
+using namespace std;
+
+class MinStack {
+	vector<pair<int, int> > sta;
+	int min(int x, int y) {
+		return (x<y)?x:y;
+	}
+
+	public:
+
+		void push(int x) {
+			if (sta.empty())
+				sta.push_back(make_pair(x, x));
+			else
+				sta.push_back(make_pair(x, min(sta.back().second, x)));
+		}
+
+		void pop() {
+			sta.pop_back();
+		}
+
+		int top() {
+			return sta.back().first;
+		}
+
+		int getMin() {
+			return sta.back().second;
+		}
+};
+
+int main() {
+	int num;
+	int n = 0;
+	MinStack msta;
+
+	while (cin >> num) {
+		msta.push(num);
+		cerr << "push " << '\t' << num << '\t' << "min " << msta.getMin() << endl;
+		n++;
+	}
+
+	cerr << "start popping:" << endl;
+	while (n>0) {
+		cerr << "min " << msta.top() << '\t' << "min " << msta.getMin() << endl;
+		msta.pop();
+		n--;
+	}
+
+	return 0;
+}

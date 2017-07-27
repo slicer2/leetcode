@@ -1,0 +1,85 @@
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <functional>
+#include <utility>
+
+using namespace std;
+
+string ind ("");
+
+class Solution {
+	struct hashPairInt {
+		size_t operator () (const pair<int, int> & p) const {
+			hash<int> h;
+
+			return h(p.first)+h(p.second);
+		}
+	};
+
+	unordered_map<pair<int, int>, bool, hashPairInt> memoized;
+
+	bool match(const char *s, unsigned xs, const char *p, unsigned xp) {
+		ind += "  ";
+		cerr << ind << "xs = " << xs << "   xp = " << xp << endl;
+
+		if (memoized.find(make_pair(xs, xp)) != memoized.end())
+			{ ind=ind.substr(0, ind.length()-2); return memoized[make_pair(xs, xp)]; }
+
+		unsigned x = 0;
+
+		switch (p[xp]) {
+			case '*':
+				cerr << ind << "*" << endl;
+
+				while (p[xp+1] == '*') xp++;
+
+				if (match(s, xs+x, p, xp+1))
+					{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = true); }
+
+				while (s[xs+x] != '\0')
+					if (match(s, xs+(++x), p, xp+1))
+						{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = true); }
+
+				{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = false); }
+			case '?':
+				cerr << ind << "?" << endl;
+				if (s[xs] != '\0' && match(s, xs+1, p, xp+1))
+					{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = true); }
+				else
+					{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = false); }
+			case '\0':
+				cerr << ind << "\\0" << endl;
+				if (s[xs] == '\0')
+					{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = true); }
+				else
+					{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = false); }
+			default:
+				cerr << ind << "s[xs] = " << s[xs] << "  p[xp] = " << p[xp] << endl;
+				if (s[xs] == p[xp] && match(s, xs+1, p, xp+1))
+					{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = true); }
+				else
+					{ ind=ind.substr(0, ind.length()-2); return (memoized[make_pair(xs, xp)] = false); }
+		}
+	}
+
+	public:
+
+	bool isMatch(const char *s, const char *p) {
+		return match(s, 0, p, 0);
+	}
+
+};
+
+int main() {
+	string str, pat;
+	cin >> str >> pat;
+
+	cout << "str = " << str << "    pat = " << pat << endl;
+
+	Solution sol;
+
+	cout << sol.isMatch(str.c_str(), pat.c_str()) << endl;
+
+	return 0;
+}

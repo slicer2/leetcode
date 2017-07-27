@@ -1,0 +1,64 @@
+#include <iostream>
+
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(NULL) {}
+};
+
+class Solution {
+	public:
+		ListNode *removeNthFromEnd(ListNode *head, int n) {
+			ListNode *newHead = NULL;
+
+			while (head) {
+				ListNode *t = head->next;
+				head->next = newHead;
+				newHead = head;
+				head = t;
+			}
+
+			for (int i=0; i<n-1; i++) {
+				ListNode *t = newHead->next;
+				newHead->next = head;
+				head = newHead;
+				newHead = t;
+			}
+
+			if (newHead) newHead = newHead->next;
+
+			while (newHead) {
+				ListNode *t = newHead->next;
+				newHead->next = head;
+				head = newHead;
+				newHead = t;
+			}
+
+			return head;
+		}
+};
+
+int main() {
+	int n, num;
+	cin >> n;
+
+	ListNode *head = NULL;
+
+	while (cin >> num) {
+		ListNode *p = new ListNode(num);
+		p->next = head;
+		head = p;
+	}
+
+	Solution sol;
+	head = sol.removeNthFromEnd(head, n);
+
+	for (ListNode *p = head; p != NULL; p = p->next)
+		cout << p->val << ' ';
+	
+	cout << endl;
+
+	return 0;
+}

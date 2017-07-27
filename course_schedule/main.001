@@ -1,0 +1,92 @@
+#include <vector>
+#include "dan.h"
+#include <iostream>
+#include <unordered_set>
+#include <stack>
+#include <cstdlib>
+
+using namespace std;
+
+class Solution {
+	public:
+		bool canfinish(int n, vector<vector<int> > &pre) {
+			stack<int> tosee;
+
+			// as soon as an element is put in the stack, it is 'seen'
+			vector<int> seen(n, 0);
+
+			for (int i=0; i<3; i++) {
+				if (seen[i] == 0) {
+					vector<int> seenthissearch(n, 0);
+
+					seenthissearch[i] = 1;
+					seen[i] = 1;
+
+					tosee.push(i);
+					cerr << " <= " << i << endl;
+
+					while (!tosee.empty()) {
+						int course = tosee.top();
+						tosee.pop();
+
+						cerr << course << " <= " << endl;
+
+						for (auto &y: pre[course]) {
+							if (seenthissearch[y] == 1)
+								return false;
+
+							seenthissearch[y] = 1;
+
+							if (seen[y] == 0) {
+								seen[y] = 1;
+								tosee.push(y);
+
+								cerr << " <= " << y << endl;
+							}
+						}
+					}
+
+				}
+			}
+
+			return true;
+		}
+
+		bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {
+			vector<vector<int> > pre(numCourses);
+			vector<unordered_set<int> > uniqpre(numCourses);
+
+			// create prerequisite graph
+			for (auto &x: prerequisites) {
+				if (uniqpre[x[0]].find(x[1]) == uniqpre[x[0]].end()) {
+					uniqpre[x[0]].insert(x[1]);
+					pre[x[0]].push_back(x[1]);
+				}
+			}
+
+			return canfinish(numCourses, pre);
+		}
+};
+
+int main() {
+	int numCourses;
+	vector<vector<int> > prerequisites;
+	vector<int> temp;
+
+	cin >> numCourses;
+	cin.ignore(100, '\n');
+
+	while (cin >> temp) {
+		prerequisites.push_back(temp);
+		temp.clear();
+	}
+
+
+	Solution sol;
+	if (sol.canFinish(numCourses, prerequisites))
+		cout << "yes" << endl;
+	else
+		cout << "no" << endl;
+
+	return 0;
+}

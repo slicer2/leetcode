@@ -1,0 +1,95 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+template <typename T>
+ostream & operator << (ostream &os, vector<T> &v) {
+	typename vector<T>::iterator it = v.begin();
+
+	for (; it != v.end(); it++)
+		os << (*it) << ' ';
+
+	os << endl;
+}
+
+class Solution {
+	vector<int> manacher (string s) {
+		vector<int> result;
+		int tstep;
+
+		int len_result = s.length()*2 + 1;
+
+		result.resize(len_result);
+
+		result[0] = 0;
+
+		int c = 0;
+
+		for (int i=1; i<len_result; i++) {
+			if (i > c+result[c]) {
+				tstep = 0;
+				while (  i-tstep-1 >= 0 && i+tstep+1 < len_result && ( (i+tstep+1) % 2 == 0 || s[(i-tstep-1)/2] == s[(i+tstep+1)/2] ) ) 
+					tstep++;
+
+				c = i;
+
+				result[i] = tstep;
+			}
+			else {
+				if (i+result[2*c-i] >= c+result[c]) {
+					tstep = c+result[c]-i;
+					while (  i-tstep-1 >= 0 && i+tstep+1 < len_result && ( (i+tstep+1) % 2 == 0 || s[(i-tstep-1)/2] == s[(i+tstep+1)/2] ) ) 
+						tstep++;
+
+					c = i;
+
+					result[i] = tstep;
+				}
+				else 
+					result[i] = result[2*c-i];
+			}
+
+		}
+
+		return result;
+	}
+
+	public:
+		string longestPalindrome(string s) {
+			if (s.length() == 0) return s;
+
+			vector<int> result(manacher(s));
+
+
+			int max_len = -1, max_left, max_right;
+
+			for (int i=0; i<result.size(); i++) {
+				int actual_len;
+				if (i % 2)
+					actual_len = result[i]/2*2 + 1;
+				else
+					actual_len = (result[i]+1)/2*2;
+
+				if (actual_len > max_len) {
+					max_len = actual_len;
+					max_left = (i-result[i])/2;
+					max_right = (i+result[i])/2-1;
+
+				}
+			}
+
+			return s.substr(max_left, max_right-max_left+1);
+		}
+};
+
+int main() {
+	string s;
+	cin >> s;
+
+	Solution sol;
+	cout << sol.longestPalindrome(s) << endl;
+
+	return 0;
+}

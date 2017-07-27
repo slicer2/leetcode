@@ -1,0 +1,46 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	public:
+		int minSubArrayLen(int s, vector<int>& nums) {
+			int p=0, q=0, sum = 0;
+			int minLen = nums.size()+1; 
+
+			while (q < nums.size()) {
+				sum += nums[q++];
+
+				while (sum < s && q < nums.size()) {
+					sum += nums[q++];
+				}
+
+				if (sum >= s) {
+					while (sum - nums[p] >= s) sum -= nums[p++];
+
+					if (minLen > q-p) minLen = q-p;
+				}
+			}
+
+			return (minLen>nums.size())?0:minLen;
+		}
+};
+
+int main() {
+	vector<int> nums;
+	int s;
+	cin >> s;
+
+	string dummy;
+	getline(cin , dummy);
+
+	cin >> nums;
+
+	Solution sol;
+	cout << sol.minSubArrayLen(s, nums) << endl;
+
+	return 0;
+}

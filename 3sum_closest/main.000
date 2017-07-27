@@ -1,0 +1,84 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <algorithm>
+#include <cmath>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	int twoSumClosest(vector<int> &num, int start, int target, int &closest) {
+		int sum, dist;
+
+		int first = num[start-1];
+
+		unsigned i, j;
+		int second = num[start]-1;
+
+		for (i=start, j = num.size()-1; i < j; i++) {
+			if (num[i] != second) {
+				second = num[i];
+
+				while (j > i && num[j]+second+first > target)
+					j--;
+
+				if (j > i) {
+					dist = abs(first+second+num[j]-target);
+					if (dist < closest) {
+						closest = dist;
+						sum = first+second+num[j];
+					}
+				}
+
+				if (j < num.size()-1) {
+					dist = abs(first+second+num[j+1]-target);
+					if (dist < closest) {
+						closest = dist;
+						sum = first+second+num[j+1];
+					}
+				}
+			}
+		}
+
+		return sum;
+	}
+	public:
+	int threeSumClosest(vector<int> &num, int target) {
+
+		int closestDist = INT_MAX;
+		int closestSum;
+
+		sort(num.begin(), num.end());
+
+		int first = num[0]-1;
+
+		for (unsigned i=0; i<num.size()-2; i++) {
+
+			if (num[i] != first) {
+				first = num[i];
+				closestSum = twoSumClosest(num, i+1, target, closestDist);
+			}
+		}
+
+		return closestSum;
+	}
+};
+
+int main() {
+	vector<int> num;
+	int target;
+
+	cin >> target;
+	cin.ignore(100,'\n');
+
+	cin >> num;
+
+	cout << target << endl << num << endl;
+
+	Solution sol;
+
+	cout << sol.threeSumClosest(num, target) << endl;
+
+	return 0;
+}

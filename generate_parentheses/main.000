@@ -1,0 +1,60 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	vector<string> res;
+	int n;
+
+	struct Partial {
+		int left, right;
+		string s;
+
+		Partial(): left(0), right(0), s("") {}
+	};
+
+	void generate(Partial &partial) {
+		if (!(partial.left >= partial.right && partial.right >= 0 && partial.left <= n))
+			return;
+
+		if (partial.left == partial.right && partial.left == n) {
+			res.push_back(partial.s);
+			return;
+		}
+
+		partial.s += "(";
+		partial.left++;
+		generate(partial);
+		partial.left--;
+
+		partial.s.back() = ')';
+		partial.right++;
+		generate(partial);
+		partial.right--;
+		partial.s.erase(partial.s.length()-1, 1);
+	}
+
+	public:
+		vector<string> generateParenthesis(int n) {
+			this->n = n;
+			Partial partial;
+
+			generate(partial);
+
+			return res;
+		}
+};
+
+int main() {
+	int n;
+	cin >> n;
+
+	Solution sol;
+
+	cout << sol.generateParenthesis(n) << endl;
+
+	return 0;
+}

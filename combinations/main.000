@@ -1,0 +1,63 @@
+/**
+ * This doesn't seem like the best solution
+ * an iterative approach seems to potentially
+ * save a lot computations. But OJ accepted it
+ * anyway.
+ */
+
+#include <iostream>
+#include <vector>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	public:
+		vector<vector<int> > combine(int n, int k) {
+			vector<vector<int> > comb;
+
+			if (n < k)
+				return comb;
+
+			if (n == k) {
+				vector<int> row;
+				for (int i=1; i<=n; i++)
+					row.push_back(i);
+
+				comb.push_back(row);
+
+				return comb;
+			}
+
+			if (k == 0) {
+				vector<int> row;
+
+				comb.push_back(row);
+
+				return comb;
+			}
+
+
+			comb = combine(n-1, k);
+
+			vector<vector<int> > comb2 = combine(n-1, k-1);
+
+			for (auto &x: comb2) {
+				x.push_back(n);
+				comb.push_back(x);
+			}
+
+			return comb;
+		}
+};
+
+int main() {
+	int n, k;
+
+	cin >> n >> k;
+
+	Solution sol;
+
+	cout << sol.combine(n, k) << endl;
+	return 0;
+}

@@ -1,0 +1,114 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include "dan.h"
+
+using namespace std;
+
+struct Interval {
+	int start;
+	int end;
+	Interval() : start(0), end(0) {}
+	Interval(int s, int e) : start(s), end(e) {}
+};
+
+ostream & operator << (ostream &os, const Interval &intv) {
+	os << "(" << intv.start << ", " << intv.end << ")  ";
+	return os;
+}
+
+class Solution {
+
+	public:
+		vector<Interval> insert(vector<Interval> intervals, Interval newInterval) {
+			vector<Interval> result;
+			Interval curr;
+
+			if (intervals.size() == 0) {
+				result.push_back(newInterval);
+				return result;
+			}
+
+			int i=0; 
+
+			// first handle all intervals start from left of newInterval
+			// until an overalpping happens or cross or hit the end of intervals
+			if (intervals[0].start < newInterval.start) {
+				while(i < (int)intervals.size() && intervals[i].end < newInterval.start) 
+					result.push_back(intervals[i++]);
+
+				if (i == (int)intervals.size()) {
+					result.push_back(newInterval);
+					return result;
+				}
+
+				if (intervals[i].start <= newInterval.start) {
+					curr.start = intervals[i].start;
+
+					if (intervals[i].end <= newInterval.end)
+						curr.end = newInterval.end;
+					else
+						curr.end = intervals[i].end;
+
+					i++;
+				}
+				else {
+					if (intervals[i].start <= newInterval.end) {
+						curr.start = newInterval.start;
+
+						if (intervals[i].end <= newInterval.end)
+							curr.end = newInterval.end;
+						else
+							curr.end = intervals[i].end;
+
+						i++;
+					}
+					else {
+						curr = newInterval;
+					}
+				}
+
+			}
+			else {
+				// if no interval starts from left of newInterval, set curr to newInterval
+				curr.start = newInterval.start;
+				curr.end = newInterval.end;
+			}
+
+			// keep combining all intervals to the right that overlaps with curr
+			while(i < (int)intervals.size() && intervals[i].start <= curr.end) {
+				if (intervals[i].end > curr.end)
+					curr.end = intervals[i].end;
+
+				i++;
+			}
+
+			// this is the merged interval
+			result.push_back(curr);
+
+			// copy the rest
+			while(i < (int)intervals.size())
+				result.push_back(intervals[i++]);
+
+			return result;
+		}
+};
+
+int main() {
+
+	int n1, n2;
+	Interval newInterval;
+
+	cin >> newInterval.start >> newInterval.end;
+
+	vector<Interval> intervals;
+
+	while (cin >> n1 >> n2) {
+		intervals.push_back(Interval(n1, n2));
+	}
+
+	Solution sol;
+	cout << sol.insert(intervals, newInterval) << endl;
+
+	return 0;
+}

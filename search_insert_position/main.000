@@ -1,0 +1,45 @@
+#include <iostream>
+
+using namespace std;
+
+class Solution {
+	public:
+		int searchInsert(int A[], int n, int target) {
+			if (n == 0)
+				return 0;
+
+			if (target <= A[0])
+				return 0;
+
+			if (target > A[n-1])
+				return n;
+
+			int start = 0, end = n-1;
+
+			while (start + 1 < end) {
+				int mid = (start+end)/2;
+				if (A[mid] >= target)
+					end = mid;
+				else
+					start = mid;
+			}
+
+			return end;
+		}
+};
+
+int main() {
+	int *A = new int [1000];
+	int n;
+	int p = 0;
+	int target;
+
+	cin >> target;
+	
+	while (cin >> n)
+		A[p++] = n;
+
+	Solution sol;
+	cout << sol.searchInsert(A, p, target) << endl;
+	return 0;
+}

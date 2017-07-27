@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include "dan.h"
+
+using namespace std;
+
+class Solution {
+	vector<vector<char> > comb;
+	int targetUsedDigit;
+	vector<string> res;
+
+	struct Partial {
+		int usedDigit;
+		string s;
+		Partial(): usedDigit(0), s("") {}
+	};
+
+	void genComb(Partial &partial, string &digits) {
+		if (partial.usedDigit == targetUsedDigit) {
+			res.push_back(partial.s);
+			return;
+		}
+
+		if (comb[digits[partial.usedDigit] - '0'].empty()) {
+			partial.usedDigit++;
+			genComb(partial, digits);
+			partial.usedDigit--;
+		}
+		else
+			for (auto &x: comb[digits[partial.usedDigit] - '0']) {
+				partial.s += x;
+				partial.usedDigit++;
+				genComb(partial, digits);
+				partial.s.erase(partial.s.length()-1, 1);
+				partial.usedDigit--;
+			}
+	}
+
+	public:
+	Solution():comb(10) {
+		comb[2] = {'a', 'b', 'c'};
+		comb[3] = {'d', 'e', 'f'};
+		comb[4] = {'g', 'h', 'i'};
+		comb[5] = {'j', 'k', 'l'};
+		comb[6] = {'m', 'n', 'o'};
+		comb[7] = {'p', 'q', 'r', 's'};
+		comb[8] = {'t', 'u', 'v'};
+		comb[9] = {'w', 'x', 'y', 'z'};
+	}
+
+	vector<string> letterCombinations(string digits) {
+		targetUsedDigit = digits.length();
+		Partial partial;
+
+		genComb(partial, digits);
+
+		return res;
+	}
+};
+
+int main() {
+	string digits;
+
+	cin >> digits;
+
+	Solution sol;
+
+	cout << sol.letterCombinations(digits) << endl;
+
+	return 0;
+}

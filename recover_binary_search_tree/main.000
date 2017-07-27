@@ -1,0 +1,119 @@
+/**
+ * If there are two high to low jumps, swap the high of first jump and the low of the second jump
+ * if there is only one jump, find the left most node that has same value as high, and right most node
+ * that has same value of low (only one of them can be different from the reference point, swap these 
+ * two nodes
+ *
+ * these are the only possibilities: can't have 3 jumps and 0 jump means already in good shape
+ **/
+
+
+#include <iostream>
+#include "dan.h"
+#include <stack>
+
+using namespace std;
+
+#define SHOW(x) ((x)?x->val:0)
+
+
+class Solution {
+
+	public:
+		void recoverTree(TreeNode *root) {
+			stack<TreeNode *> sta;
+			TreeNode *p1 = NULL, *p2 = NULL, *p_left = NULL, *p_right = NULL, *p_prev = NULL;
+
+			if (!root) return;
+
+			while (root) {
+				sta.push(root);
+				root = root->left;
+			}
+
+			//cerr << "p" << '\t' << "p1" << '\t' << "p2" << '\t'<< "p_left" << '\t' << "p_right" << '\t' << "p_prev" << endl;
+
+			while (!sta.empty()) {
+				TreeNode *p = sta.top();
+				sta.pop();
+
+				if (!p1) {
+					if (!p_left || p_left->val < p->val)
+						p_left = p;
+				}
+
+				if (p_prev) {
+					if (p_prev->val > p->val) {
+						if (!p1)
+							p1 = p_prev;
+						else
+							p2 = p;
+					}
+				}
+
+				if (p1) {
+					if (!p_right || p->val == p_right->val)
+						p_right = p;
+				}
+
+				p_prev = p;
+
+
+				//cerr << SHOW(p) << '\t' << SHOW(p1) << '\t' << SHOW(p2) << '\t'<< SHOW(p_left) << '\t' << SHOW(p_right) << '\t' << SHOW(p_prev) << endl;
+
+				p = p->right;
+
+				while (p) {
+					sta.push(p);
+					p = p->left;
+				}
+
+			}
+
+			//cerr << endl << "p1=" << p1 << ' ' << "p2=" << p2 << endl;
+
+			if (p1 && p2) {
+				//cerr << "found 2 jumps" << endl;
+				int t = p1->val;
+				p1->val = p2->val;
+				p2->val = t;
+			}
+			else
+				if (p1) {
+					//cerr << "found 1 jump" << endl;
+					int t = p_left->val;
+					p_left->val = p_right->val;
+					p_right->val = t;
+				}
+				else;
+					//cerr << "no swap" << endl;
+
+		}
+
+};
+
+int main() {
+	TreeNode *root;
+
+	string s;
+
+	getline(cin, s);
+
+	cout << " s = " << s << endl;
+
+	root = constructBinaryTree(s);
+
+	cout << "before: " << endl;
+	preorder(root);
+
+	cout << endl;
+
+	Solution sol;
+
+	sol.recoverTree(root);
+
+	cout << "after: " << endl;
+	preorder(root);
+
+	cout << endl;
+}

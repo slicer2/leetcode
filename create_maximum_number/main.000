@@ -1,0 +1,129 @@
+#include "dan.h"
+#include <queue>
+#include <algorithm>
+#include <algorithm>
+#include <cassert>
+
+using namespace std;
+
+class Solution {
+	struct MyLess {
+		bool operator()(const pair<int, int> &p1, const pair<int, int> &p2) {
+			if (p1.first < p2.first || (p1.first == p2.first && p1.second > p2.second))
+				return true;
+			return false;
+		}
+	};
+
+	public:
+	vector<int> maxNumber(vector<int>& nums1, vector<int>& nums2, int k) {
+		int sz1 = nums1.size(), sz2 = nums2.size();
+		int last1 = min(sz1-1, sz1-(k-sz2)), last2 = min(sz2-1, sz2-(k-sz1));
+		priority_queue<pair<int, int>, vector<pair<int, int>>, MyLess> q1, q2;
+		for (int i=0; i<=last1; i++) q1.push(make_pair(nums1[i], i));
+		for (int i=0; i<=last2; i++) q2.push(make_pair(nums2[i], i));
+
+		vector<int> res;
+		maxNumber(nums1, last1, q1, nums2, last2, q2, res, k);
+		return res;
+	}
+
+	void maxNumber(const vector<int> &nums1, int last1, priority_queue<pair<int, int>, vector<pair<int, int>>, MyLess> &q1,
+			const vector<int> &nums2, int last2, priority_queue<pair<int, int>, vector<pair<int, int>>, MyLess> &q2, vector<int> &res, int k) {
+		if (k == 0) return;
+
+		//if (q1.empty()) {
+		//	for (int i=0; i<k; i++) {
+		//		res.push_back(q2.top().first);
+		//		popTill(q2, q2.top().second);
+		//	}
+
+		//	return;
+		//}
+
+		//if (q2.empty()) {
+		//	for (int i=0; i<k; i++) {
+		//		res.push_back(q1.top().first);
+		//		popTill(q1, q1.top().second);
+		//	}
+
+		//	return;
+		//}
+
+		if ( q2.empty() || (!q1.empty() && q1.top().first > q2.top().first) ) {
+			res.push_back(q1.top().first);
+			popTill(q1, q1.top().second);
+			if (last1 < nums1.size()-1) {
+				last1++;
+				q1.push(make_pair(nums1[last1], last1));
+			}
+			maxNumber(nums1, last1, q1, nums2, last2, q2, res, k-1);
+		}
+		else if ( q1.empty() || (!q2.empty() && q1.top().first < q2.top().first) ) {
+			res.push_back(q2.top().first);
+			popTill(q2, q2.top().second);
+			if (last2 < nums2.size()-1) {
+				last2++;
+				q2.push(make_pair(nums2[last2], last2));
+			}
+			maxNumber(nums1, last1, q1, nums2, last2, q2, res, k-1);
+		}
+		else {
+			vector<int> res_bak(res);
+			priority_queue<pair<int, int>, vector<pair<int, int>>, MyLess> q1_bak(q1);
+			int last1_bak = last1;
+
+			res.push_back(q1.top().first);
+			popTill(q1, q1.top().second);
+			if (last1 < nums1.size()-1) {
+				last1++;
+				q1.push(make_pair(nums1[last1], last1));
+			}
+
+			cerr << q1.size() << " " << q2.size() << " " << k << endl;
+			maxNumber(nums1, last1, q1, nums2, last2, q2, res, k-1);
+
+			swap(res, res_bak);
+			swap(q1, q1_bak);
+			swap(last1, last1_bak);
+
+			res.push_back(q2.top().first);
+			popTill(q2, q2.top().second);
+			if (last2 < nums2.size()-1) {
+				last2++;
+				q2.push(make_pair(nums2[last2], last2));
+			}
+			maxNumber(nums1, last1, q1, nums2, last2, q2, res, k-1);
+
+			if (isGreater(res_bak, res)) swap(res, res_bak);
+		}
+	}
+
+	bool isGreater(const vector<int> &r1, const vector<int> &r2) {
+		int sz1 = r1.size(), sz2 = r2.size();
+		assert(sz1 == sz2 && sz1 > 0);
+		for (int i=0; i<sz1; i++) {
+			if (r1[i] > r2[i]) return true;
+			if (r1[i] < r2[i]) return false;
+		}
+
+		return false;
+	}
+
+	void popTill(priority_queue<pair<int, int>, vector<pair<int, int>>, MyLess> &q, int idx) {
+		while (!q.empty() && q.top().second <= idx) q.pop();
+	}
+};
+
+int main() {
+	vector<int> nums1, nums2;
+	int k;
+
+	cin >> nums1;
+	cin >> nums2;
+	cin >> k;
+
+	Solution sol;
+	cout << sol.maxNumber(nums1, nums2, k) << endl;
+	return 0;
+}

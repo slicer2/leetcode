@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <string> 
+#include <unordered_set>
+#include <unordered_map>
+
+using namespace std;
+
+class Solution {
+	public:
+		string longestCommonPrefix(vector<string> &strs) {
+			if (strs.empty())
+				return string("");
+
+			unordered_set<int> survivor;
+			unsigned longest = 0, longestIdx = 0;
+
+			for (unsigned i=0; i<strs.size(); i++)
+				survivor.insert(i);
+
+			unsigned i = 0-1;
+			while (!survivor.empty()) {
+				i++;
+
+				unordered_map<char, vector<int> > countMap;
+				vector<int> toErase;
+
+				for (auto &x: survivor) {
+					if (strs[x].length()-1 >= i)
+						countMap[strs[x][i]].push_back(x);
+					else {
+						if (i > longest) {
+							longest = i;
+							longestIdx = x;
+						}
+						
+						toErase.push_back(x);
+					}
+				}
+
+				for (auto &x: toErase)
+					survivor.erase(x);
+
+				for (auto &x: countMap) {
+					if (x.second.size() == 1) {
+						if (i > longest) {
+							longest = i;
+							longestIdx = x.second[0];
+						}
+
+						survivor.erase(x.second[0]);
+					}
+				}
+			}
+
+			return strs[longestIdx].substr(0, longest);
+		}
+};
+
+int main() {
+	string s;
+	vector<string> strs;
+
+	while (cin >> s)
+		strs.push_back(s);
+
+	Solution sol;
+
+	cout << sol.longestCommonPrefix(strs) << endl;
+
+	return 0;
+}
